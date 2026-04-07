@@ -191,9 +191,9 @@ def render(session):
     with tabs[2]:
         st.subheader("Tactic Coverage Score (TCS)")
         st.caption(
-            "Kiểm tra đa dạng và cân bằng của 10 loại speech act (SA_AUTH, SA_THREAT…). "
+            "Kiểm tra đa dạng và cân bằng của span tags trong dataset. "
             "Gini coefficient đo mức độ lệch phân phối — Gini > 0.40 = mất cân bằng. "
-            "Tactic dưới 50 examples cần bổ sung thêm dữ liệu."
+            "TCS cao = dataset phủ đều nhiều loại chiến thuật."
         )
         with st.spinner("Computing TCS..."):
             tcs = compute_tcs(convs)
@@ -206,7 +206,7 @@ def render(session):
         })
 
         # Chart 13: Horizontal Bar
-        st.caption("**#13 — Tactic Frequency Bar**: Tần suất từng speech act, ngưỡng tối thiểu 50 examples.")
+        st.caption("**#13 — Span Tag Frequency**: Tần suất xuất hiện của mỗi span tag trong scammer turns.")
         st.plotly_chart(plot_tcs_horizontal_bar(tcs), use_container_width=True)
 
         # Chart 14: Lorenz Curve
@@ -214,7 +214,8 @@ def render(session):
         st.plotly_chart(plot_tcs_lorenz_curve(tcs), use_container_width=True)
 
         if tcs.get("uncovered_tactics"):
-            st.warning(f"Tactics với < 50 examples: {tcs['uncovered_tactics']}")
+            with st.expander(f"Span tags chưa xuất hiện ({len(tcs['uncovered_tactics'])})"):
+                st.write(", ".join(tcs["uncovered_tactics"]))
 
     # ── LDS ────────────────────────────────────────────────────────
     with tabs[3]:

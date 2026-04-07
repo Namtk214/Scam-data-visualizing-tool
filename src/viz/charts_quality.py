@@ -767,40 +767,37 @@ def plot_ds_adaptability_timeline(conv: Dict) -> go.Figure:
 # ─────────────────────────────────────────────────────────────────
 
 def plot_tcs_horizontal_bar(tcs_report: Dict) -> go.Figure:
-    """#13 — Horizontal bar: tactic frequency (refactor)."""
+    """#13 — Horizontal bar: span tag frequency."""
     counts = tcs_report.get("tactic_counts", {})
     if not counts:
-        return _empty_fig("Không có dữ liệu tactic")
+        return _empty_fig("Không có dữ liệu span tags")
 
     df = pd.DataFrame(
-        list(counts.items()), columns=["Tactic", "Count"]
+        list(counts.items()), columns=["Tag", "Count"]
     ).sort_values("Count")
 
     total = tcs_report.get("total_scammer_turns", sum(counts.values())) or 1
     df["Freq%"] = (df["Count"] / total * 100).round(1)
 
-    colors = [SSAT_COLORS.get(t, "#94a3b8") for t in df["Tactic"]]
+    colors = [SPAN_COLORS.get(t, "#94a3b8") for t in df["Tag"]]
 
     fig = go.Figure(go.Bar(
         x=df["Count"].tolist(),
-        y=df["Tactic"].tolist(),
+        y=df["Tag"].tolist(),
         orientation="h",
         marker_color=colors,
         text=[f"{c} ({f:.1f}%)" for c, f in zip(df["Count"], df["Freq%"])],
         textposition="outside",
-        textfont_size=9,
+        textfont_size=10,
     ))
-    fig.add_vline(x=50, line_dash="dash", line_color="#ef4444",
-                  annotation_text="Min 50", annotation_font_size=9)
     fig.update_layout(
         title=_title(
-            "Tactic Frequency — Tần Suất Speech Act",
-            "Số scammer turns chứa mỗi loại speech act + % tổng. "
-            "Đường đỏ đứt = ngưỡng tối thiểu 50 examples. "
-            "Dưới ngưỡng = cần bổ sung thêm dữ liệu huấn luyện."
+            "Span Tag Frequency — Tần Suất Nhãn Token",
+            "Số scammer turns chứa mỗi loại span tag + % tổng. "
+            "Tag với tần suất thấp = chiến thuật ít xuất hiện trong dataset.",
         ),
         showlegend=False,
-        yaxis_tickfont_size=9,
+        yaxis_tickfont_size=10,
         xaxis_title="Số turns",
     )
     return _base_layout(fig, height=370)
