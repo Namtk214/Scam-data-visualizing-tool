@@ -22,35 +22,238 @@ Mỗi conversation là một JSON object:
 
 ```json
 {
-  "conversation_id": "conv_0001",
-  "title": "Tên case",
-  "summary": "Mô tả ngắn",
-  "context": "Bối cảnh cuộc gọi",
-  "conversation_labels": {
-    "outcome": "SCAM",
-    "scenario_group": "A",
-    "scenario_name": "Mạo danh Công an",
-    "phase_sequence": ["P1", "P3", "P5"],
-    "ambiguity_level": "L1"
-  },
-  "turns": [
-    {
-      "turn_id": 1,
-      "speaker": "scammer",
-      "text": "Nội dung turn...",
-      "turn_labels": {
-        "ssat": ["SA_AUTH"],
-        "vrt": null,
-        "vcs": null,
-        "phase": "P1"
+    "conversation_id": "DEMO_NH_FULL_001",
+    "meta": {
+      "dataset_version": "1.0.0",
+      "schema_version": "2.0.0",
+      "language": "vi"
+    },
+    "scenario": {
+      "id": "NH_VCB",
+      "name": "Mạo danh Vietcombank",
+      "domain_l1": "AUTHORITY_IMPERSONATION",
+      "domain_l2": "Banking",
+      "fraud_goal": "otp_extraction",
+      "real_world_prevalence": "high"
+    },
+    "conversation_meta": {
+      "length_class": "medium",
+      "total_turns": 10,
+      "outcome": "FULL_COMPLIANCE",
+      "phases_present": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5"
+      ],
+      "primary_tactics": [
+        "SA_AUTH",
+        "SA_URGENCY",
+        "SA_THREAT"
+      ],
+      "cialdini_principles": [
+        "authority",
+        "scarcity"
+      ],
+      "cognitive_mechanisms": [
+        "fear_injection",
+        "cognitive_overload"
+      ],
+      "ambiguity_score": 0.18,
+      "difficulty_score": 0.55,
+      "ambiguity_level": "low",
+      "difficulty_tier": "hard"
+    },
+    "personas": {
+      "scammer": {
+        "persona_id": "SCM_NH_01",
+        "claimed_identity": "Nhân viên Vietcombank - Phòng Bảo mật",
+        "speaking_register": "formal_professional",
+        "gender_presented": "male"
       },
-      "spans": [
-        {"label": "FAKE_ID", "start": 15, "end": 39, "text": "Nguyễn Văn Hùng"}
-      ]
+      "victim": {
+        "profile_id": "VIC_F45_01",
+        "age_range": "40-55",
+        "gender": "female",
+        "vulnerability_profile": "low_digital_literacy",
+        "prior_scam_knowledge": "none"
+      }
+    },
+    "turns": [
+      {
+        "turn_id": 1,
+        "speaker": "scammer",
+        "phase": "P1",
+        "text": "Xin chào, đây là Ngân hàng Vietcombank, phòng xử lý giao dịch bất thường. Tôi cần xác minh tài khoản số cuối 4523 của chị.",
+        "speech_acts": [
+          "SA_AUTH",
+          "SA_VALIDATE"
+        ],
+        "manipulation_intensity": 2,
+        "span_annotations": [
+          {
+            "tag": "FAKE_ORG",
+            "span_text": "Ngân hàng Vietcombank, phòng xử lý giao dịch bất thường"
+          },
+          {
+            "tag": "FAKE_VALIDATION",
+            "span_text": "tài khoản số cuối 4523"
+          }
+        ],
+        "response_type": null,
+        "cognitive_state": null
+      },
+      {
+        "turn_id": 2,
+        "speaker": "victim",
+        "phase": "P1",
+        "text": "Vâng, đúng rồi ạ. Có vấn đề gì không?",
+        "speech_acts": [],
+        "manipulation_intensity": null,
+        "span_annotations": [],
+        "response_type": "VR_QUESTION",
+        "cognitive_state": "NEUTRAL"
+      },
+      {
+        "turn_id": 3,
+        "speaker": "scammer",
+        "phase": "P3",
+        "text": "Tài khoản của chị vừa có 2 giao dịch lạ tổng cộng 47 triệu đồng. Chúng tôi cần đóng băng ngay để bảo vệ chị.",
+        "speech_acts": [
+          "SA_THREAT",
+          "SA_URGENCY",
+          "SA_VALIDATE"
+        ],
+        "manipulation_intensity": 4,
+        "span_annotations": [
+          {
+            "tag": "FAKE_VALIDATION",
+            "span_text": "2 giao dịch lạ tổng cộng 47 triệu đồng"
+          },
+          {
+            "tag": "URGENCY_PHRASE",
+            "span_text": "đóng băng ngay"
+          }
+        ],
+        "response_type": null,
+        "cognitive_state": null
+      },
+      {
+        "turn_id": 4,
+        "speaker": "victim",
+        "phase": "P3",
+        "text": "Ôi trời, sao lại thế? Tôi không có làm giao dịch gì cả.",
+        "speech_acts": [],
+        "manipulation_intensity": null,
+        "span_annotations": [],
+        "response_type": "VR_QUESTION",
+        "cognitive_state": "FEARFUL"
+      },
+      {
+        "turn_id": 5,
+        "speaker": "scammer",
+        "phase": "P4",
+        "text": "Chính xác, đây là giao dịch bất thường. Để bảo vệ tiền của chị, chúng tôi sẽ chuyển tài khoản vào hệ thống bảo mật. Chị cần cung cấp mã OTP được gửi vào điện thoại ngay bây giờ.",
+        "speech_acts": [
+          "SA_REASSURE",
+          "SA_REQUEST"
+        ],
+        "manipulation_intensity": 4,
+        "span_annotations": [
+          {
+            "tag": "REQUEST_INFO",
+            "span_text": "cung cấp mã OTP được gửi vào điện thoại ngay bây giờ"
+          }
+        ],
+        "response_type": null,
+        "cognitive_state": null
+      },
+      {
+        "turn_id": 6,
+        "speaker": "victim",
+        "phase": "P4",
+        "text": "Nhưng mà... tôi có nên gửi không? Ngân hàng có thực sự cần OTP không?",
+        "speech_acts": [],
+        "manipulation_intensity": null,
+        "span_annotations": [],
+        "response_type": "VR_HESITATE",
+        "cognitive_state": "SUSPICIOUS"
+      },
+      {
+        "turn_id": 7,
+        "speaker": "scammer",
+        "phase": "P4",
+        "text": "Đây là quy trình bắt buộc của ngân hàng. Nếu chị không xác nhận trong 5 phút, tài khoản sẽ bị khóa vĩnh viễn.",
+        "speech_acts": [
+          "SA_VALIDATE",
+          "SA_THREAT",
+          "SA_URGENCY"
+        ],
+        "manipulation_intensity": 5,
+        "span_annotations": [
+          {
+            "tag": "FAKE_VALIDATION",
+            "span_text": "quy trình bắt buộc của ngân hàng"
+          },
+          {
+            "tag": "THREAT_PHRASE",
+            "span_text": "tài khoản sẽ bị khóa vĩnh viễn"
+          },
+          {
+            "tag": "URGENCY_PHRASE",
+            "span_text": "trong 5 phút"
+          }
+        ],
+        "response_type": null,
+        "cognitive_state": null
+      },
+      {
+        "turn_id": 8,
+        "speaker": "victim",
+        "phase": "P4",
+        "text": "Ừ thôi được, mã OTP của tôi là 483726.",
+        "speech_acts": [],
+        "manipulation_intensity": null,
+        "span_annotations": [],
+        "response_type": "VR_COMPLY",
+        "cognitive_state": "COMPLIANT"
+      },
+      {
+        "turn_id": 9,
+        "speaker": "scammer",
+        "phase": "P5",
+        "text": "Cảm ơn chị, tài khoản của chị đã được bảo mật thành công.",
+        "speech_acts": [
+          "SA_CLOSE",
+          "SA_REASSURE"
+        ],
+        "manipulation_intensity": 1,
+        "span_annotations": [],
+        "response_type": null,
+        "cognitive_state": null
+      },
+      {
+        "turn_id": 10,
+        "speaker": "victim",
+        "phase": "P5",
+        "text": "Cảm ơn anh.",
+        "speech_acts": [],
+        "manipulation_intensity": null,
+        "span_annotations": [],
+        "response_type": "VR_COMPLY",
+        "cognitive_state": "COMPLIANT"
+      }
+    ],
+    "quality": {
+      "writer_id": "W01",
+      "expert_reviewer_id": "EX01",
+      "annotation_method": "adversarial_roleplay",
+      "iaa_score": 0.89,
+      "expert_authenticity_score": 5,
+      "is_gold": true
     }
-  ],
-  "notes": "Ghi chú..."
-}
+  },
 ```
 
 Input hỗ trợ:
