@@ -1,8 +1,10 @@
 """
-dataset_balance.py — Dataset Balance Report (DBR) metric.
+dataset_balance.py — Dataset Balance Report (DBR) metric. Span-only version.
 
-8 dimensions: scenario, outcome, length_class, speech_acts,
-              victim_state, domain_l1, difficulty_tier, ambiguity_level
+7 dimensions: scenario, outcome, length_class, span_tags,
+              domain_l1, difficulty_tier, ambiguity_level
+
+(victim_state dimension removed — cognitive_state no longer in schema)
 
 Mỗi dimension: normalized entropy [0,1].
 Mean balance score ≥ 0.65 = acceptable.
@@ -11,14 +13,21 @@ import math
 from collections import Counter
 from typing import Dict, Any, List
 
-from src.constants import DBR_MEAN_BALANCE_MIN, DBR_DIMENSIONS
-from src.schema import VALID_SSAT, VALID_VCS_V2
+from src.constants import DBR_MEAN_BALANCE_MIN
+from src.schema import get_turn_span_tags
+
+
+# Updated dimensions — span_tags replaces speech_acts, victim_state removed
+DBR_DIMENSIONS_SPAN = [
+    "scenario", "outcome", "length_class", "span_tags",
+    "domain_l1", "difficulty_tier", "ambiguity_level"
+]
 
 
 def compute_dbr(dataset: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Tính Dataset Balance Report.
-    
+
     Returns:
         {
           normalized_entropy: dict {dim: float},
@@ -33,7 +42,7 @@ def compute_dbr(dataset: List[Dict[str, Any]]) -> Dict[str, Any]:
         return {"mean_balance_score": 0.0, "warnings": ["Empty dataset"]}
 
     # Collect per-dimension values
-    dim_counters: Dict[str, Counter] = {d: Counter() for d in DBR_DIMENSIONS}
+    dim_counters: Dict[str, Counter] = {d: Counter() for d in DBR_DIMENSIONS_SPAN}
 
     for conv in dataset:
         cm = conv.get("conversation_meta", {})
@@ -46,19 +55,13 @@ def compute_dbr(dataset: List[Dict[str, Any]]) -> Dict[str, Any]:
         dim_counters["difficulty_tier"][cm.get("difficulty_tier", "unknown")] += 1
         dim_counters["ambiguity_level"][cm.get("ambiguity_level", "unknown")] += 1
 
-        # speech_acts: each unique tactic used as a category
-        all_acts = set()
+        # span_tags: each unique tag used as a category
+        all_tags: set = set()
         for t in conv.get("turns", []):
-            all_acts.update(t.get("speech_acts") or [])
-        for act in all_acts:
-            dim_counters["speech_acts"][act] += 1
-
-        # victim_state: dominant state in conversation
-        states = [t.get("cognitive_state") for t in conv.get("turns", [])
-                  if t.get("speaker") == "victim" and t.get("cognitive_state")]
-        if states:
-            dominant = Counter(states).most_common(1)[0][0]
-            dim_counters["victim_state"][dominant] += 1
+            if t.get("speaker") == "scammer":
+                all_tags.update(get_turn_span_tags(t))
+        for tag in all_tags:
+            dim_counters["span_tags"][tag] += 1
 
     # Normalized entropy per dimension
     normalized_entropy: Dict[str, float] = {}
@@ -88,7 +91,9 @@ def compute_dbr(dataset: List[Dict[str, Any]]) -> Dict[str, Any]:
     outcome_counts = dim_counters["outcome"]
     total_outcomes = sum(outcome_counts.values())
     if total_outcomes > 0:
-        comply_ratio = (outcome_counts.get("FULL_COMPLIANCE", 0) + outline_count(outcome_counts)) / total_outcomes
+        comply_ratio = (
+            outcome_counts.get("FULL_COMPLIANCE", 0) + outcome_counts.get("SCAM", 0)
+        ) / total_outcomes
         if comply_ratio > 0.60:
             warnings.append(f"FULL_COMPLIANCE ratio {comply_ratio:.1%} > 60% (positive bias warning)")
 
@@ -99,11 +104,6 @@ def compute_dbr(dataset: List[Dict[str, Any]]) -> Dict[str, Any]:
         "dimension_counts": {d: dict(c) for d, c in dim_counters.items()},
         "warnings": warnings,
     }
-
-
-def outline_count(counter: Counter) -> int:
-    # Count legacy SCAM outcome
-    return counter.get("SCAM", 0)
 
 
 def _normalized_entropy(counter: Counter) -> float:

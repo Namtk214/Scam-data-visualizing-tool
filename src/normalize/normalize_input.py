@@ -9,14 +9,13 @@ Sau khi normalize, mọi conversation phải có:
   - quality
 
 Mỗi turn phải có:
-  - turn_id, speaker, text, phase, speech_acts (list), 
-    response_type (or null), cognitive_state (or null),
-    manipulation_intensity (or null), span_annotations (list)
+  - turn_id, speaker, text, phase, span_annotations (list)
+  (Không còn: speech_acts, response_type, cognitive_state, manipulation_intensity)
 """
 from typing import Dict, Any, List, Optional
 
 from src.normalize.legacy_adapter import is_legacy_schema, adapt_legacy
-from src.schema import VALID_PHASES, VALID_SSAT, VALID_VRT, VALID_VCS_V2
+from src.schema import VALID_PHASES
 from src.constants import classify_length
 
 
@@ -27,11 +26,11 @@ def normalize_conversation(
     """
     Normalize một conversation sang unified v2 schema.
     Tự detect legacy vs v2 schema.
-    
+
     Args:
         conv: raw conversation dict
-        vcs_map: custom VCS legacy mapping
-    
+        vcs_map: (deprecated, kept for backward compat) custom VCS legacy mapping
+
     Returns:
         Normalized conversation dict
     """
@@ -65,7 +64,7 @@ def _fill_derived_fields(conv: Dict[str, Any]) -> Dict[str, Any]:
     if not cm.get("total_turns"):
         cm["total_turns"] = len(turns)
 
-    # phases_present
+    # phases_present — derive từ turn.phase
     if not cm.get("phases_present"):
         seen = set()
         phases = []
@@ -76,14 +75,16 @@ def _fill_derived_fields(conv: Dict[str, Any]) -> Dict[str, Any]:
                 phases.append(ph)
         cm["phases_present"] = phases
 
-    # primary_tactics
-    if not cm.get("primary_tactics"):
-        tactic_counter: Dict[str, int] = {}
+    # primary_span_tags — derive từ span_annotations (thay primary_tactics)
+    if not cm.get("primary_span_tags"):
+        tag_counter: Dict[str, int] = {}
         for t in turns:
             if t.get("speaker") == "scammer":
-                for s in (t.get("speech_acts") or []):
-                    tactic_counter[s] = tactic_counter.get(s, 0) + 1
-        cm["primary_tactics"] = sorted(tactic_counter, key=lambda k: -tactic_counter[k])[:3]
+                for sp in (t.get("span_annotations") or []):
+                    tag = sp.get("tag", "")
+                    if tag:
+                        tag_counter[tag] = tag_counter.get(tag, 0) + 1
+        cm["primary_span_tags"] = sorted(tag_counter, key=lambda k: -tag_counter[k])[:3]
 
     # length_class
     if not cm.get("length_class"):
@@ -106,7 +107,7 @@ def _ensure_mandatory_fields(conv: Dict[str, Any]) -> Dict[str, Any]:
     cm.setdefault("phases_present", [])
     cm.setdefault("length_class", "")
     cm.setdefault("total_turns", len(conv.get("turns", [])))
-    cm.setdefault("primary_tactics", [])
+    cm.setdefault("primary_span_tags", [])
     cm.setdefault("ambiguity_score", None)
     cm.setdefault("difficulty_score", None)
     cm.setdefault("ambiguity_level", "")
@@ -126,31 +127,22 @@ def _ensure_mandatory_fields(conv: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _normalize_turn(turn: Dict[str, Any], fallback_id: int) -> Dict[str, Any]:
-    """Normalize một turn: fill các required fields."""
-    result = dict(turn)
-
-    result.setdefault("turn_id", fallback_id)
-    result.setdefault("speaker", "")
-    result.setdefault("text", "")
-    result.setdefault("phase", None)
-
-    # speech_acts must be a list
-    sa = result.get("speech_acts")
-    if sa is None:
-        result["speech_acts"] = []
-    elif isinstance(sa, str):
-        result["speech_acts"] = [sa] if sa else []
-
-    result.setdefault("response_type", None)
-    result.setdefault("cognitive_state", None)
-    result.setdefault("manipulation_intensity", None)
+    """Normalize một turn: chỉ giữ span_annotations, phase, speaker, text."""
+    result = {
+        "turn_id": turn.get("turn_id", fallback_id),
+        "speaker": turn.get("speaker", ""),
+        "phase": turn.get("phase") or turn.get("turn_labels", {}).get("phase"),
+        "text": turn.get("text", ""),
+    }
 
     # span_annotations must be a list
-    spans = result.get("span_annotations")
+    spans = turn.get("span_annotations")
     if spans is None:
         # Try legacy spans field
-        legacy_spans = result.get("spans", [])
+        legacy_spans = turn.get("spans", [])
         from src.normalize.legacy_adapter import _adapt_legacy_span
         result["span_annotations"] = [_adapt_legacy_span(s) for s in legacy_spans]
-    
+    else:
+        result["span_annotations"] = spans
+
     return result

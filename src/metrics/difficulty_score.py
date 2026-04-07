@@ -1,35 +1,38 @@
 """
-difficulty_score.py — Difficulty Score (DS) metric.
+difficulty_score.py — Difficulty Score (DS) metric. Span-only version.
 
 DS Score [0.0 - 1.0] đo độ khó tổng thể của conversation đối với NLP model.
+Tính hoàn toàn từ span_annotations thay vì turn-level labels.
 
 Sub-scores (weighted sum):
   F1 (0.25): Ambiguity contribution (reuse AI score)
-  F2 (0.20): Tactic density (unique tactics / 8)
+  F2 (0.20): Span tag diversity (unique span tags / 8)
   F3 (0.15): Phase complexity (phases_present / 6)
   F4 (0.20): Linguistic complexity (TTR of scammer text)
-  F5 (0.10): Victim confusion (state changes)
-  F6 (0.10): Scammer adaptability (SA_ESCALATE + SA_DEFLECT count)
+  F5 (0.10): Span tag-set escalation (số lần tag-set thay đổi giữa các scammer turns liên tiếp)
+  F6 (0.10): Scammer adaptability (THREAT_PHRASE + DEFLECT_PHRASE span count)
 
 Tiers: easy <0.30, medium <0.55, hard <0.75, expert ≥0.75
 """
 from typing import Dict, Any, List
 
-from src.constants import DS_FACTOR_WEIGHTS, DS_TIER_THRESHOLDS, DS_TARGET, TCS_SATURATION
+from src.constants import DS_FACTOR_WEIGHTS, DS_TIER_THRESHOLDS, DS_TARGET
 from src.metrics.ambiguity_index import compute_ai
+from src.schema import get_turn_span_tags, VALID_SPAN_LABELS
+
+_N_SPAN_TAGS = len(VALID_SPAN_LABELS)  # 8
 
 
 def compute_ds(conv: Dict[str, Any]) -> Dict[str, Any]:
     """
     Tính Difficulty Score cho một conversation.
-    
+
     Returns:
         {difficulty_score, difficulty_tier, sub_scores, recommendation, warnings}
     """
     warnings: List[str] = []
     turns = conv.get("turns", [])
     scammer_turns = [t for t in turns if t.get("speaker") == "scammer"]
-    victim_turns = [t for t in turns if t.get("speaker") == "victim"]
 
     sub_scores: Dict[str, float] = {}
 
@@ -39,19 +42,19 @@ def compute_ds(conv: Dict[str, Any]) -> Dict[str, Any]:
     sub_scores["ambiguity"] = round(f1, 4)
     warnings.extend(ai_result.get("warnings", []))
 
-    # ── F2: Tactic density ──────────────────────────────────────────
-    unique_tactics = set()
+    # ── F2: Span tag diversity ──────────────────────────────────────
+    # Nhiều loại span tag khác nhau → conversation phong phú chiến thuật → khó hơn
+    unique_tags: set = set()
     for t in scammer_turns:
-        unique_tactics.update(t.get("speech_acts") or [])
-    tactic_density = min(len(unique_tactics) / TCS_SATURATION, 1.0)
-    f2 = tactic_density * DS_FACTOR_WEIGHTS["tactic_density"]
-    sub_scores["tactic_density"] = round(f2, 4)
+        unique_tags.update(get_turn_span_tags(t))
+    tag_diversity = min(len(unique_tags) / _N_SPAN_TAGS, 1.0)
+    f2 = tag_diversity * DS_FACTOR_WEIGHTS["tactic_density"]
+    sub_scores["span_tag_diversity"] = round(f2, 4)
 
     # ── F3: Phase complexity ────────────────────────────────────────
     phases = conv.get("conversation_meta", {}).get("phases_present", [])
     if not phases:
-        # derive from turns
-        seen = set()
+        seen: set = set()
         for t in turns:
             ph = t.get("phase")
             if ph:
@@ -66,24 +69,28 @@ def compute_ds(conv: Dict[str, Any]) -> Dict[str, Any]:
     tokens = scammer_text.split()
     if tokens:
         ttr = len(set(tokens)) / len(tokens)
-        ling = min(ttr * 2, 1.0)  # cap at 0.5 TTR → 1.0 factor
+        ling = min(ttr * 2, 1.0)
     else:
         ling = 0.0
         warnings.append("No scammer text found → F4 set to 0")
     f4 = ling * DS_FACTOR_WEIGHTS["linguistic"]
     sub_scores["linguistic"] = round(f4, 4)
 
-    # ── F5: Victim state changes ────────────────────────────────────
-    victim_states = [t.get("cognitive_state") for t in victim_turns if t.get("cognitive_state")]
-    state_changes = sum(1 for i in range(1, len(victim_states)) if victim_states[i] != victim_states[i - 1])
-    victim_conf = min(state_changes / 5.0, 1.0)
-    f5 = victim_conf * DS_FACTOR_WEIGHTS["victim_confusion"]
-    sub_scores["victim_confusion"] = round(f5, 4)
+    # ── F5: Span tag-set escalation between consecutive scammer turns
+    # Số lần tag-set thay đổi hoàn toàn hoặc leo thang giữa các scammer turns
+    tag_sets = [frozenset(get_turn_span_tags(t)) for t in scammer_turns]
+    escalation_changes = sum(
+        1 for i in range(1, len(tag_sets))
+        if tag_sets[i] != tag_sets[i - 1]
+    )
+    max_changes = max(len(scammer_turns) - 1, 1)
+    f5 = min(escalation_changes / max_changes, 1.0) * DS_FACTOR_WEIGHTS["victim_confusion"]
+    sub_scores["span_escalation"] = round(f5, 4)
 
-    # ── F6: Scammer adaptability ────────────────────────────────────
-    escalate = sum(1 for t in scammer_turns if "SA_ESCALATE" in (t.get("speech_acts") or []))
-    deflect = sum(1 for t in scammer_turns if "SA_DEFLECT" in (t.get("speech_acts") or []))
-    adapt = min((escalate + deflect) / 4.0, 1.0)
+    # ── F6: Scammer adaptability (THREAT + DEFLECT spans) ──────────
+    threat_turns = sum(1 for t in scammer_turns if "THREAT_PHRASE" in get_turn_span_tags(t))
+    deflect_turns = sum(1 for t in scammer_turns if "DEFLECT_PHRASE" in get_turn_span_tags(t))
+    adapt = min((threat_turns + deflect_turns) / max(len(scammer_turns), 1), 1.0)
     f6 = adapt * DS_FACTOR_WEIGHTS["scammer_adaptability"]
     sub_scores["scammer_adaptability"] = round(f6, 4)
 

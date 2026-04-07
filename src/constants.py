@@ -35,13 +35,14 @@ AI_TARGET = {
     "high_max": 0.30,
 }
 
+# F4 (victim_confusion) removed — no turn-level labels for victim
+# Weights redistributed across 5 remaining factors (sum = 1.0)
 AI_FACTOR_WEIGHTS = {
-    "f1_no_explicit_request": 0.25,
-    "f2_low_manipulation": 0.20,
-    "f3_professional_register": 0.20,
-    "f4_victim_confusion": 0.15,
-    "f5_deflection": 0.10,
-    "f6_partial_outcome": 0.10,
+    "f1_no_explicit_request": 0.28,
+    "f2_low_span_density":    0.22,
+    "f3_formal_no_threat":    0.22,
+    "f5_deflection":          0.14,
+    "f6_partial_outcome":     0.14,
 }
 
 AI_LEVEL_THRESHOLDS = {
@@ -85,7 +86,7 @@ DS_FACTOR_WEIGHTS = {
 # ─────────────────────────────────────────────────────────────────
 TCS_MIN_COUNT_PER_TACTIC = 50
 TCS_GINI_TARGET = 0.40       # Gini <= 0.40 is acceptable
-TCS_SATURATION = 8           # unique tactics saturation point
+TCS_SATURATION = 8           # unique span tags saturation point (8 total span labels)
 
 # ─────────────────────────────────────────────────────────────────
 # LDS — Linguistic Diversity Score
@@ -119,9 +120,10 @@ AQS_MIN_TURNS_FOR_ENTROPY = 50
 # DBR — Dataset Balance Report
 # ─────────────────────────────────────────────────────────────────
 DBR_MEAN_BALANCE_MIN = 0.65
+# span_tags replaces speech_acts; victim_state removed (no cognitive_state)
 DBR_DIMENSIONS = [
-    "scenario", "outcome", "length_class", "speech_acts",
-    "victim_state", "domain_l1", "difficulty_tier", "ambiguity_level"
+    "scenario", "outcome", "length_class", "span_tags",
+    "domain_l1", "difficulty_tier", "ambiguity_level"
 ]
 
 # ─────────────────────────────────────────────────────────────────
@@ -144,6 +146,9 @@ def classify_length(n_turns: int) -> str:
 # ─────────────────────────────────────────────────────────────────
 # BENCHMARK TASKS
 # ─────────────────────────────────────────────────────────────────
+# T4 (Tactic Classification via speech_acts) and T6 (Victim State Tracking via cognitive_state)
+# removed — turn-level labels no longer in schema.
+# T4 replaced by T4b: Span Extraction (token-level NER task)
 BENCHMARK_TASKS = {
     "T1": {
         "name": "Scam Detection",
@@ -160,26 +165,20 @@ BENCHMARK_TASKS = {
     "T3": {
         "name": "Phase Segmentation",
         "input": "full conversation",
-        "output": "phase sequence",
+        "output": "phase per turn",
         "label_field": "turns[].phase",
     },
-    "T4": {
-        "name": "Tactic Classification",
-        "input": "single scammer turn",
-        "output": "SSAT multi-label",
-        "label_field": "turns[].speech_acts",
+    "T4b": {
+        "name": "Manipulation Span Extraction",
+        "input": "single scammer turn text",
+        "output": "span tag + span text (NER)",
+        "label_field": "turns[].span_annotations",
     },
     "T5": {
         "name": "Outcome Prediction",
         "input": "partial conversation P1-P3",
         "output": "outcome class",
         "label_field": "outcome",
-    },
-    "T6": {
-        "name": "Victim State Tracking",
-        "input": "victim turn sequence",
-        "output": "VCS sequence",
-        "label_field": "turns[].cognitive_state",
     },
     "T7": {
         "name": "Ambiguity-Stratified Evaluation",

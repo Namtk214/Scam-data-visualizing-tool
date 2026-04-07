@@ -13,7 +13,7 @@ import pandas as pd
 
 from src.schema import (
     SSAT_COLORS, VCS_COLORS, DOMAIN_COLORS, OUTCOME_COLORS, SPAN_COLORS,
-    VALID_VCS_V2, PHASE_DESC,
+    PHASE_DESC, SPAN_COLORS, ALL_SPAN_TAGS, get_turn_span_tags,
 )
 
 
@@ -227,16 +227,18 @@ def plot_ai_confusion_bubble(per_conv: List[Dict], convs: List[Dict]) -> go.Figu
         cid = r.get("conversation_id", f"conv_{i}")
         conv = conv_map.get(cid, {})
         victim_turns = [t for t in conv.get("turns", []) if t.get("speaker") == "victim"]
-        confused = sum(
-            1 for t in victim_turns
-            if t.get("response_type") == "VR_QUESTION"
-            and t.get("cognitive_state") in {"NEUTRAL", "CURIOUS", "CONCERNED"}
+        # "Confusion density" = proportion of victim turns adjacent to a THREAT/URGENT span
+        scammer_turns = [t for t in conv.get("turns", []) if t.get("speaker") == "scammer"]
+        threat_turns = sum(
+            1 for t in scammer_turns
+            if any(sp.get("tag") in {"THREAT_PHRASE", "URGENT_CLAIM"}
+                   for sp in (t.get("span_annotations") or []))
         )
-        total_victim = len(victim_turns) or 1
+        total_scammer = len(scammer_turns) or 1
         data.append({
             "id": cid,
-            "confusion_count": confused,
-            "confusion_density": round(confused / total_victim, 3),
+            "confusion_count": threat_turns,
+            "confusion_density": round(threat_turns / total_scammer, 3),
             "ai_score": r.get("ambiguity_score", 0),
             "label": r.get("ambiguity_level", ""),
         })
@@ -271,8 +273,8 @@ def plot_ai_confusion_bubble(per_conv: List[Dict], convs: List[Dict]) -> go.Figu
     fig.update_layout(
         title=_title(
             "Confusion Density Bubble — Mật Độ Bối Rối Nạn Nhân",
-            "Trục Y = tỷ lệ turns nạn nhân VR_QUESTION + rối loạn. Kích thước bong bóng = AI score. "
-            "Bong bóng to + đỏ = conversation tinh vi với nạn nhân bối rối nhiều."
+            "Trục Y = tỷ lệ turns scammer có THREAT_PHRASE/URGENT_CLAIM. Kích thước bong bóng = AI score. "
+            "Bong bóng to + đỏ = conversation áp lực cao với nhiều span đe dọa/gấp."
         ),
         xaxis_title="Conversation #",
         yaxis_title="Confusion Density",
@@ -282,11 +284,12 @@ def plot_ai_confusion_bubble(per_conv: List[Dict], convs: List[Dict]) -> go.Figu
 
 
 def plot_ai_attack_deflect(convs: List[Dict]) -> go.Figure:
-    """#5 — Sankey: SA_THREAT/SA_URGENCY → SA_DEFLECT flow."""
-    source_deflect = {"SA_THREAT": 0, "SA_URGENCY": 0}
+    """#5 — Sankey: THREAT_PHRASE/URGENT_CLAIM → DEFLECT_BLAME span flow."""
+    source_deflect = {"THREAT_PHRASE": 0, "URGENT_CLAIM": 0}
     for conv in convs:
         has_deflect = any(
-            "SA_DEFLECT" in (t.get("speech_acts") or [])
+            any(sp.get("tag") == "DEFLECT_BLAME"
+                for sp in (t.get("span_annotations") or []))
             for t in conv.get("turns", [])
             if t.get("speaker") == "scammer"
         )
@@ -294,45 +297,40 @@ def plot_ai_attack_deflect(convs: List[Dict]) -> go.Figure:
             for t in conv.get("turns", []):
                 if t.get("speaker") != "scammer":
                     continue
-                acts = t.get("speech_acts") or []
-                if "SA_THREAT" in acts and "SA_DEFLECT" in acts:
-                    source_deflect["SA_THREAT"] += 1
-                if "SA_URGENCY" in acts and "SA_DEFLECT" in acts:
-                    source_deflect["SA_URGENCY"] += 1
+                tags = {sp.get("tag", "") for sp in (t.get("span_annotations") or [])}
+                if "THREAT_PHRASE" in tags and "DEFLECT_BLAME" in tags:
+                    source_deflect["THREAT_PHRASE"] += 1
+                if "URGENT_CLAIM" in tags and "DEFLECT_BLAME" in tags:
+                    source_deflect["URGENT_CLAIM"] += 1
 
-    # Count pure occurrences without deflect
     pure_threat = sum(
         1 for conv in convs for t in conv.get("turns", [])
         if t.get("speaker") == "scammer"
-        and "SA_THREAT" in (t.get("speech_acts") or [])
-        and "SA_DEFLECT" not in (t.get("speech_acts") or [])
+        and any(sp.get("tag") == "THREAT_PHRASE" for sp in (t.get("span_annotations") or []))
+        and not any(sp.get("tag") == "DEFLECT_BLAME" for sp in (t.get("span_annotations") or []))
     )
     pure_urgency = sum(
         1 for conv in convs for t in conv.get("turns", [])
         if t.get("speaker") == "scammer"
-        and "SA_URGENCY" in (t.get("speech_acts") or [])
-        and "SA_DEFLECT" not in (t.get("speech_acts") or [])
+        and any(sp.get("tag") == "URGENT_CLAIM" for sp in (t.get("span_annotations") or []))
+        and not any(sp.get("tag") == "DEFLECT_BLAME" for sp in (t.get("span_annotations") or []))
     )
     deflect_only = sum(
         1 for conv in convs for t in conv.get("turns", [])
         if t.get("speaker") == "scammer"
-        and "SA_DEFLECT" in (t.get("speech_acts") or [])
-        and "SA_THREAT" not in (t.get("speech_acts") or [])
-        and "SA_URGENCY" not in (t.get("speech_acts") or [])
+        and any(sp.get("tag") == "DEFLECT_BLAME" for sp in (t.get("span_annotations") or []))
+        and not any(sp.get("tag") in {"THREAT_PHRASE", "URGENT_CLAIM"}
+                    for sp in (t.get("span_annotations") or []))
     )
 
     total_links = sum(source_deflect.values()) + pure_threat + pure_urgency
     if total_links == 0:
-        return _empty_fig("Không có SA_THREAT / SA_URGENCY / SA_DEFLECT trong dữ liệu")
+        return _empty_fig("Không có span THREAT_PHRASE / URGENT_CLAIM / DEFLECT_BLAME trong dữ liệu")
 
-    # Nodes: 0=SA_THREAT, 1=SA_URGENCY, 2=SA_DEFLECT, 3=NO_DEFLECT
-    node_labels = ["SA_THREAT", "SA_URGENCY", "SA_DEFLECT", "Không deflect"]
+    node_labels = ["THREAT_PHRASE", "URGENT_CLAIM", "DEFLECT_BLAME", "Không deflect"]
     node_colors = ["#c0392b", "#e67e22", "#7f8c8d", "#27ae60"]
 
-    links = {
-        "source": [], "target": [], "value": [],
-        "color": [],
-    }
+    links = {"source": [], "target": [], "value": [], "color": []}
 
     def _add(src, tgt, val, col):
         if val > 0:
@@ -341,8 +339,8 @@ def plot_ai_attack_deflect(convs: List[Dict]) -> go.Figure:
             links["value"].append(val)
             links["color"].append(col)
 
-    _add(0, 2, source_deflect["SA_THREAT"], "rgba(192,57,43,0.4)")
-    _add(1, 2, source_deflect["SA_URGENCY"], "rgba(230,126,36,0.4)")
+    _add(0, 2, source_deflect["THREAT_PHRASE"], "rgba(192,57,43,0.4)")
+    _add(1, 2, source_deflect["URGENT_CLAIM"], "rgba(230,126,36,0.4)")
     _add(0, 3, pure_threat, "rgba(39,174,96,0.3)")
     _add(1, 3, pure_urgency, "rgba(39,174,96,0.3)")
 
@@ -357,9 +355,9 @@ def plot_ai_attack_deflect(convs: List[Dict]) -> go.Figure:
     ))
     fig.update_layout(
         title=_title(
-            "Attack → Deflect Flow Map",
-            "Luồng từ chiến thuật tấn công (SA_THREAT / SA_URGENCY) sang phòng thủ (SA_DEFLECT). "
-            "Luồng lớn vào SA_DEFLECT = scammer chuyển hướng nhiều → kịch bản nhập nhằng cao."
+            "Attack → Deflect Span Flow Map",
+            "Luồng từ span tấn công (THREAT_PHRASE / URGENT_CLAIM) sang phòng thủ (DEFLECT_BLAME). "
+            "Luồng lớn vào DEFLECT_BLAME = scammer chuyển hướng nhiều → kịch bản nhập nhằng cao."
         ),
     )
     return _base_layout(fig, height=340)
@@ -461,44 +459,43 @@ def plot_ds_ai_scatter(ai_per: List[Dict], ds_per: List[Dict]) -> go.Figure:
 
 
 def plot_ds_tactic_bar(convs: List[Dict]) -> go.Figure:
-    """#8 — Grouped bar: tactic count per conversation (top 15 convs by tactic diversity)."""
-    from src.schema import ALL_TACTICS
+    """#8 — Grouped bar: span tag count per conversation (top 15 convs by span diversity)."""
     rows = []
     for conv in convs:
         cid = conv.get("conversation_id", "")
-        tactic_counts: Counter = Counter()
+        tag_counts: Counter = Counter()
         for t in conv.get("turns", []):
             if t.get("speaker") == "scammer":
-                for sa in (t.get("speech_acts") or []):
-                    if sa in ALL_TACTICS:
-                        tactic_counts[sa] += 1
-        if tactic_counts:
-            for tactic, cnt in tactic_counts.items():
-                rows.append({"conv": cid, "tactic": tactic, "count": cnt})
+                for sp in (t.get("span_annotations") or []):
+                    tag = sp.get("tag", "")
+                    if tag:
+                        tag_counts[tag] += 1
+        if tag_counts:
+            for tag, cnt in tag_counts.items():
+                rows.append({"conv": cid, "tactic": tag, "count": cnt})
 
     if not rows:
-        return _empty_fig("Không có speech_acts trong dữ liệu")
+        return _empty_fig("Không có span annotations trong dữ liệu")
 
     df = pd.DataFrame(rows)
-    # Top 15 conversations by total tactic turns
     top_convs = (
         df.groupby("conv")["count"].sum()
         .nlargest(15).index.tolist()
     )
     df_top = df[df["conv"].isin(top_convs)].copy()
-    # Shorten conv IDs for display
     df_top["conv_short"] = df_top["conv"].apply(lambda x: x[-12:] if len(x) > 12 else x)
 
+    colors_map = {t: SPAN_COLORS.get(t, "#94a3b8") for t in df_top["tactic"].unique()}
     fig = px.bar(
         df_top, x="conv_short", y="count", color="tactic",
-        color_discrete_map=SSAT_COLORS,
+        color_discrete_map=colors_map,
         barmode="group",
         title=_title(
-            "Tactic Distribution per Conversation (Top 15)",
-            "Số turns của từng speech act trong 15 conversations có nhiều tactics nhất. "
-            "Phân bổ đều giữa các tactic = scammer linh hoạt = DS cao hơn."
+            "Span Tag Distribution per Conversation (Top 15)",
+            "Số spans của từng span tag trong 15 conversations nhiều span nhất. "
+            "Phân bổ đều giữa các tag = scammer linh hoạt = DS cao hơn."
         ),
-        labels={"conv_short": "Conversation", "count": "Số turns", "tactic": "Tactic"},
+        labels={"conv_short": "Conversation", "count": "Số spans", "tactic": "Span Tag"},
     )
     fig.update_layout(xaxis_tickangle=-30, xaxis_tickfont_size=8, legend_font_size=9)
     return _base_layout(fig, height=380)
@@ -593,50 +590,105 @@ def plot_ds_ttr_histogram(convs: List[Dict]) -> go.Figure:
 
 
 def plot_ds_state_transition(vsvs_report: Dict) -> go.Figure:
-    """#11 — Sankey: VCS state transitions (NEUTRAL→FEARFUL→...)."""
+    """#11 — Sankey: Span tag transitions between consecutive scammer turns."""
     trans_matrix = vsvs_report.get("transition_matrix", {})
-    if not trans_matrix:
-        return _empty_fig("Không có dữ liệu transition (cần cognitive_state trong victim turns)")
 
-    all_states = sorted(set(
-        list(trans_matrix.keys()) + [k for v in trans_matrix.values() for k in v]
+    # trans_matrix keys: "TAG_A,TAG_B" (sorted, comma-joined tag-sets)
+    # Explode tag-sets into individual tag → tag transitions
+    transitions: Dict[str, Dict[str, int]] = {}
+    for fr_str, tos in trans_matrix.items():
+        fr_tags = [t.strip() for t in fr_str.split(",") if t.strip() and t.strip() != "(none)"]
+        for to_str, cnt in tos.items():
+            to_tags = [t.strip() for t in to_str.split(",") if t.strip() and t.strip() != "(none)"]
+            if not fr_tags or not to_tags:
+                continue
+            for fr in fr_tags:
+                for to in to_tags:
+                    transitions.setdefault(fr, {})
+                    transitions[fr][to] = transitions[fr].get(to, 0) + cnt
+
+    if not transitions:
+        return _empty_fig(
+            "Chưa có transition data — VSVS chưa ghi nhận span tag sequence.\n"
+            "Hãy đảm bảo conversations có đủ ≥2 scammer turns với span_annotations."
+        )
+
+    # ── Node & color setup ────────────────────────────────────────
+    # Vivid distinct palette per span tag
+    _TAG_PALETTE = {
+        "FAKE_ORG":        "#6366f1",   # indigo
+        "FAKE_ID":         "#8b5cf6",   # violet
+        "FAKE_VALIDATION": "#a855f7",   # purple
+        "REQUEST_INFO":    "#ef4444",   # red
+        "URGENT_CLAIM":    "#f97316",   # orange
+        "THREAT_PHRASE":   "#dc2626",   # dark-red
+        "SOCIAL_PROOF":    "#22c55e",   # green
+        "DEFLECT_BLAME":   "#14b8a6",   # teal
+        "GROOMING":        "#ec4899",   # pink
+        "ISOLATION":       "#f59e0b",   # amber
+        "AUTHORITY_CUE":   "#3b82f6",   # blue
+        "SCARCITY":        "#84cc16",   # lime
+    }
+    fallback_colors = [
+        "#6366f1", "#ef4444", "#f97316", "#22c55e",
+        "#8b5cf6", "#14b8a6", "#ec4899", "#3b82f6",
+        "#f59e0b", "#a855f7", "#dc2626", "#84cc16",
+    ]
+
+    all_tags = sorted(set(
+        list(transitions.keys()) + [k for v in transitions.values() for k in v]
     ))
-    if not all_states:
-        return _empty_fig()
+    if not all_tags:
+        return _empty_fig("Không có span tags để hiển thị")
 
-    state_idx = {s: i for i, s in enumerate(all_states)}
-    sources, targets, values, colors = [], [], [], []
+    tag_idx = {t: i for i, t in enumerate(all_tags)}
+    node_colors = [
+        _TAG_PALETTE.get(t, fallback_colors[i % len(fallback_colors)])
+        for i, t in enumerate(all_tags)
+    ]
 
-    for fr, tos in trans_matrix.items():
+    sources, targets, values, link_colors = [], [], [], []
+    for fr, tos in transitions.items():
+        fr_color = _TAG_PALETTE.get(fr, "#94a3b8")
         for to, cnt in tos.items():
             if cnt > 0:
-                sources.append(state_idx[fr])
-                targets.append(state_idx[to])
+                sources.append(tag_idx[fr])
+                targets.append(tag_idx[to])
                 values.append(cnt)
-                colors.append(_hex_rgba(VCS_COLORS.get(fr, "#94a3b8"), 0.5))
-
-    if not sources:
-        return _empty_fig("Không có transitions")
-
-    node_colors = [VCS_COLORS.get(s, "#94a3b8") for s in all_states]
+                link_colors.append(_hex_rgba(fr_color, 0.55))
 
     fig = go.Figure(go.Sankey(
+        arrangement="snap",
         node=dict(
-            label=all_states,
+            label=all_tags,
             color=node_colors,
-            pad=15, thickness=18,
+            pad=20,
+            thickness=22,
+            line=dict(color="white", width=1.5),
         ),
-        link=dict(source=sources, target=targets, value=values, color=colors),
+        link=dict(
+            source=sources,
+            target=targets,
+            value=values,
+            color=link_colors,
+        ),
+        textfont=dict(
+            family="Inter, Arial, sans-serif",
+            size=13,
+            color="#1e293b",
+        ),
     ))
     fig.update_layout(
         title=_title(
-            "VCS State Transition Sankey",
-            "Luồng chuyển trạng thái tâm lý nạn nhân. "
+            "Span Tag Transition Sankey",
+            "Luồng chuyển đổi span tags giữa các scammer turns liên tiếp. "
             "Luồng rộng = transition phổ biến. "
-            "NEUTRAL→FEARFUL→COMPLIANT = kịch bản lừa đảo điển hình."
+            "FAKE_ORG → REQUEST_INFO = setup danh tính trước khi yêu cầu thông tin (điển hình).",
         ),
+        font=dict(family="Inter, Arial, sans-serif", size=12, color="#1e293b"),
+        paper_bgcolor="white",
     )
-    return _base_layout(fig, height=380)
+    return _base_layout(fig, height=420)
 
 
 def plot_ds_adaptability_timeline(conv: Dict) -> go.Figure:
@@ -647,17 +699,21 @@ def plot_ds_adaptability_timeline(conv: Dict) -> go.Figure:
     events = []
     prev_acts: frozenset = frozenset()
     for turn_idx, t in scammer_turns:
-        acts = frozenset(t.get("speech_acts") or [])
-        if acts != prev_acts and prev_acts:  # tactic changed
-            added = acts - prev_acts
-            removed = prev_acts - acts
+        tags = frozenset(
+            sp.get("tag", "")
+            for sp in (t.get("span_annotations") or [])
+            if sp.get("tag")
+        )
+        if tags != prev_acts and prev_acts:  # span tag set changed
+            added = tags - prev_acts
+            removed = prev_acts - tags
             events.append({
                 "turn": turn_idx + 1,
                 "added": ", ".join(sorted(added)) or "—",
                 "removed": ", ".join(sorted(removed)) or "—",
-                "acts": ", ".join(sorted(acts)),
+                "acts": ", ".join(sorted(tags)),
             })
-        prev_acts = acts
+        prev_acts = tags
 
     if not scammer_turns:
         return _empty_fig("Không có scammer turns")
@@ -1197,7 +1253,8 @@ def plot_aqs_annotator_radar(entropy_data: Dict) -> go.Figure:
 
 def plot_aqs_span_heatmap(convs: List[Dict]) -> go.Figure:
     """#22 — Heatmap: span coverage % per tactic type × annotator."""
-    from src.schema import TACTICS_REQUIRING_SPAN
+    from src.schema import ALL_SPAN_TAGS
+    _TACTICS_REQUIRING_SPAN = {t: t for t in ALL_SPAN_TAGS}
 
     # {annotator: {tactic: [requiring, with_span]}}
     data: Dict[str, Dict[str, List[int]]] = {}
@@ -1205,23 +1262,21 @@ def plot_aqs_span_heatmap(convs: List[Dict]) -> go.Figure:
     for conv in convs:
         writer = (conv.get("quality") or {}).get("writer_id", "unknown")
         if writer not in data:
-            data[writer] = {t: [0, 0] for t in TACTICS_REQUIRING_SPAN}
+            data[writer] = {t: [0, 0] for t in _TACTICS_REQUIRING_SPAN}
         for turn in conv.get("turns", []):
             if turn.get("speaker") != "scammer":
                 continue
-            acts = turn.get("speech_acts") or []
-            spans = turn.get("span_annotations") or []
-            for tactic in TACTICS_REQUIRING_SPAN:
-                if tactic in acts:
-                    data[writer][tactic][0] += 1
-                    if spans:
-                        data[writer][tactic][1] += 1
+            tags_present = {sp.get("tag", "") for sp in (turn.get("span_annotations") or [])}
+            for tactic in _TACTICS_REQUIRING_SPAN:
+                data[writer][tactic][0] += 1
+                if tactic in tags_present:
+                    data[writer][tactic][1] += 1
 
     if not data:
         return _empty_fig("Không có dữ liệu span annotation hoặc writer_id")
 
     annotators = sorted(data.keys())
-    tactics = sorted(TACTICS_REQUIRING_SPAN.keys())
+    tactics = sorted(_TACTICS_REQUIRING_SPAN.keys())
 
     matrix = []
     for ann in annotators:

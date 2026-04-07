@@ -17,7 +17,6 @@ from src.schema import (
     AMBIGUITY_LEGACY_TO_V2,
     AMBIGUITY_LEGACY_TO_SCORE,
     OUTCOME_LEGACY_MAP,
-    VCS_LEGACY_MAP_DEFAULT,
 )
 
 
@@ -43,7 +42,7 @@ def adapt_legacy(conv: Dict[str, Any], vcs_map: Optional[Dict[str, str]] = None)
         conv dict đã được normalized sang v2 schema
     """
     if vcs_map is None:
-        vcs_map = VCS_LEGACY_MAP_DEFAULT.copy()
+        vcs_map = {}  # VCS no longer in schema
 
     result = dict(conv)
     labels = conv.get("conversation_labels", {})
@@ -88,16 +87,16 @@ def adapt_legacy(conv: Dict[str, Any], vcs_map: Optional[Dict[str, str]] = None)
                     phase_seq_derived.append(ph)
             phase_seq = phase_seq_derived
 
-        # Derive primary_tactics from scammer turns
-        tactic_counter: Dict[str, int] = {}
+        # Derive primary_span_tags from scammer turns
+        tag_counter: Dict[str, int] = {}
         for t in turns:
             if t.get("speaker") == "scammer":
-                ssat = t.get("turn_labels", {}).get("ssat") or t.get("speech_acts", [])
-                if isinstance(ssat, list):
-                    for s in ssat:
-                        tactic_counter[s] = tactic_counter.get(s, 0) + 1
+                for sp in (t.get("span_annotations") or t.get("spans", [])):
+                    tag = sp.get("tag") or sp.get("label", "")
+                    if tag:
+                        tag_counter[tag] = tag_counter.get(tag, 0) + 1
 
-        primary_tactics = [k for k, _ in sorted(tactic_counter.items(), key=lambda x: -x[1])][:3]
+        primary_span_tags = [k for k, _ in sorted(tag_counter.items(), key=lambda x: -x[1])][:3]
 
         n_turns = len(turns)
         from src.constants import classify_length
@@ -108,7 +107,7 @@ def adapt_legacy(conv: Dict[str, Any], vcs_map: Optional[Dict[str, str]] = None)
             "total_turns": n_turns,
             "outcome": outcome_v2,
             "phases_present": phase_seq,
-            "primary_tactics": primary_tactics,
+            "primary_span_tags": primary_span_tags,
             "cialdini_principles": labels.get("cialdini_principles", []),
             "cognitive_mechanisms": labels.get("cognitive_mechanisms", []),
             "ambiguity_score": ambig_score,
@@ -155,44 +154,22 @@ def adapt_legacy(conv: Dict[str, Any], vcs_map: Optional[Dict[str, str]] = None)
 
 
 def _adapt_legacy_turn(turn: Dict[str, Any], vcs_map: Dict[str, str]) -> Dict[str, Any]:
-    """Convert một turn từ v1 → v2 schema."""
-    result = dict(turn)
+    """Convert một turn từ v1 → span-only schema. Chỉ giữ phase + span_annotations."""
     tl = turn.get("turn_labels", {}) or {}
-    
-    # speech_acts
-    if "speech_acts" not in result:
-        ssat = tl.get("ssat", [])
-        result["speech_acts"] = ssat if isinstance(ssat, list) else ([ssat] if ssat else [])
 
-    # response_type
-    if "response_type" not in result:
-        result["response_type"] = tl.get("vrt") or None
+    result = {
+        "turn_id": turn.get("turn_id"),
+        "speaker": turn.get("speaker", ""),
+        "phase": turn.get("phase") or tl.get("phase") or None,
+        "text": turn.get("text", ""),
+    }
 
-    # cognitive_state (with legacy mapping)
-    if "cognitive_state" not in result:
-        raw_vcs = tl.get("vcs") or None
-        if raw_vcs:
-            result["cognitive_state"] = vcs_map.get(raw_vcs, raw_vcs)
-        else:
-            result["cognitive_state"] = None
-
-    # phase
-    if "phase" not in result:
-        result["phase"] = tl.get("phase") or None
-
-    # manipulation_intensity
-    if "manipulation_intensity" not in result:
-        result["manipulation_intensity"] = tl.get("manipulation_intensity") or None
-
-    # span_annotations
-    if "span_annotations" not in result:
+    # span_annotations (v1 spans → v2 format)
+    if "span_annotations" in turn:
+        result["span_annotations"] = turn["span_annotations"]
+    else:
         spans = turn.get("spans", [])
         result["span_annotations"] = [_adapt_legacy_span(s) for s in spans]
-
-    # cialdini_trigger, cognitive_mechanism, expected_victim_reaction, debrief_note
-    for field in ["cialdini_trigger", "cognitive_mechanism", "expected_victim_reaction", "debrief_note"]:
-        if field not in result:
-            result[field] = None
 
     return result
 

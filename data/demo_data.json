@@ -25,11 +25,6 @@
         "P4",
         "P5"
       ],
-      "primary_tactics": [
-        "SA_AUTH",
-        "SA_URGENCY",
-        "SA_THREAT"
-      ],
       "cialdini_principles": [
         "authority",
         "scarcity"
@@ -64,11 +59,6 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Xin chào, đây là Ngân hàng Vietcombank, phòng xử lý giao dịch bất thường. Tôi cần xác minh tài khoản số cuối 4523 của chị.",
-        "speech_acts": [
-          "SA_AUTH",
-          "SA_VALIDATE"
-        ],
-        "manipulation_intensity": 2,
         "span_annotations": [
           {
             "tag": "FAKE_ORG",
@@ -78,32 +68,20 @@
             "tag": "FAKE_VALIDATION",
             "span_text": "tài khoản số cuối 4523"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Vâng, đúng rồi ạ. Có vấn đề gì không?",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "NEUTRAL"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Tài khoản của chị vừa có 2 giao dịch lạ tổng cộng 47 triệu đồng. Chúng tôi cần đóng băng ngay để bảo vệ chị.",
-        "speech_acts": [
-          "SA_THREAT",
-          "SA_URGENCY",
-          "SA_VALIDATE"
-        ],
-        "manipulation_intensity": 4,
         "span_annotations": [
           {
             "tag": "FAKE_VALIDATION",
@@ -113,62 +91,39 @@
             "tag": "URGENCY_PHRASE",
             "span_text": "đóng băng ngay"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P3",
         "text": "Ôi trời, sao lại thế? Tôi không có làm giao dịch gì cả.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "FEARFUL"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P4",
         "text": "Chính xác, đây là giao dịch bất thường. Để bảo vệ tiền của chị, chúng tôi sẽ chuyển tài khoản vào hệ thống bảo mật. Chị cần cung cấp mã OTP được gửi vào điện thoại ngay bây giờ.",
-        "speech_acts": [
-          "SA_REASSURE",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 4,
         "span_annotations": [
           {
             "tag": "REQUEST_INFO",
             "span_text": "cung cấp mã OTP được gửi vào điện thoại ngay bây giờ"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P4",
         "text": "Nhưng mà... tôi có nên gửi không? Ngân hàng có thực sự cần OTP không?",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "SUSPICIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P4",
         "text": "Đây là quy trình bắt buộc của ngân hàng. Nếu chị không xác nhận trong 5 phút, tài khoản sẽ bị khóa vĩnh viễn.",
-        "speech_acts": [
-          "SA_VALIDATE",
-          "SA_THREAT",
-          "SA_URGENCY"
-        ],
-        "manipulation_intensity": 5,
         "span_annotations": [
           {
             "tag": "FAKE_VALIDATION",
@@ -182,45 +137,28 @@
             "tag": "URGENCY_PHRASE",
             "span_text": "trong 5 phút"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P4",
         "text": "Ừ thôi được, mã OTP của tôi là 483726.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       },
       {
         "turn_id": 9,
         "speaker": "scammer",
         "phase": "P5",
         "text": "Cảm ơn chị, tài khoản của chị đã được bảo mật thành công.",
-        "speech_acts": [
-          "SA_CLOSE",
-          "SA_REASSURE"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 10,
         "speaker": "victim",
         "phase": "P5",
         "text": "Cảm ơn anh.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -257,11 +195,6 @@
         "P3",
         "P4"
       ],
-      "primary_tactics": [
-        "SA_AUTH",
-        "SA_REASSURE",
-        "SA_DEFLECT"
-      ],
       "cialdini_principles": [
         "authority",
         "liking"
@@ -296,11 +229,6 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Dạ anh ơi, em là nhân viên hỗ trợ Shopee. Em thấy đơn hàng của anh bị lỗi thanh toán, anh có được thông báo không ạ?",
-        "speech_acts": [
-          "SA_AUTH",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 2,
         "span_annotations": [
           {
             "tag": "FAKE_ORG",
@@ -310,31 +238,20 @@
             "tag": "FAKE_VALIDATION",
             "span_text": "đơn hàng của anh bị lỗi thanh toán"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Lỗi thanh toán? Mình không thấy thông báo gì lúc mua hàng.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Đúng vậy anh, hệ thống bị lỗi nên không báo ạ. Bên em kiểm tra thấy anh bị trừ tiền 2 lần rồi. Em muốn giúp anh hoàn tiền.",
-        "speech_acts": [
-          "SA_VALIDATE",
-          "SA_REASSURE"
-        ],
-        "manipulation_intensity": 3,
         "span_annotations": [
           {
             "tag": "FAKE_VALIDATION",
@@ -344,31 +261,20 @@
             "tag": "SOCIAL_PROOF",
             "span_text": "anh bị trừ tiền 2 lần rồi"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P2",
         "text": "Ừ mình có đặt hàng, nhưng sao họ lại gọi điện? Shopee thường chat mà.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "SUSPICIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Dạ đúng anh ơi, trường hợp hoàn tiền số lớn trên 500k bên em gọi điện trực tiếp để xác nhận ạ. Anh cho em xác nhận tên và số thẻ nhé.",
-        "speech_acts": [
-          "SA_DEFLECT",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 3,
         "span_annotations": [
           {
             "tag": "DEFLECT_PHRASE",
@@ -378,50 +284,33 @@
             "tag": "REQUEST_INFO",
             "span_text": "xác nhận tên và số thẻ"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P3",
         "text": "Số thẻ thì mình không muốn cung cấp... nhưng tên thì được.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "SUSPICIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P4",
         "text": "Anh ơi, không có số thẻ thì hệ thống không thể hoàn tiền được. Anh yên tâm, đây chỉ để xác minh thôi ạ.",
-        "speech_acts": [
-          "SA_REASSURE",
-          "SA_ESCALATE"
-        ],
-        "manipulation_intensity": 4,
         "span_annotations": [
           {
             "tag": "DEFLECT_PHRASE",
             "span_text": "chỉ để xác minh thôi ạ"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P4",
         "text": "Thôi mình không cung cấp số thẻ đâu, Shopee không bao giờ yêu cầu số thẻ đầy đủ.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "RESISTANT"
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -457,11 +346,6 @@
         "P2",
         "P3"
       ],
-      "primary_tactics": [
-        "SA_BAIT",
-        "SA_AUTH",
-        "SA_DEFLECT"
-      ],
       "cialdini_principles": [
         "social_proof",
         "scarcity"
@@ -496,11 +380,6 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Anh ơi, em là Minh từ VN Capital. Anh có quan tâm đến cơ hội đầu tư crypto đang cho lợi nhuận 30%/tháng không?",
-        "speech_acts": [
-          "SA_AUTH",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 2,
         "span_annotations": [
           {
             "tag": "FAKE_ORG",
@@ -510,32 +389,20 @@
             "tag": "SOCIAL_PROOF",
             "span_text": "lợi nhuận 30%/tháng"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "30% một tháng? Nghe phi thực tế quá. Làm sao có mức đó?",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "SUSPICIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Đây là hệ thống trading AI thần kỳ mới nhất, bot chạy 24/7. Tháng này nhiều khách đã rút lời mà tôi vẫn đang chờ anh đấy.",
-        "speech_acts": [
-          "SA_VALIDATE",
-          "SA_URGENCY",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 3,
         "span_annotations": [
           {
             "tag": "FAKE_VALIDATION",
@@ -545,31 +412,20 @@
             "tag": "URGENCY_PHRASE",
             "span_text": "nhiều khách đã rút lời mà tôi vẫn đang chờ anh"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P2",
         "text": "Không có đầu tư nào đảm bảo lợi nhuận như vậy. Đây là scam rõ ràng.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_EXPOSE",
-        "cognitive_state": "RESISTANT"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Anh lầm rồi, đây là công nghệ mới, tôi có thể cho anh xem report của 100 nhà đầu tư...",
-        "speech_acts": [
-          "SA_DEFLECT",
-          "SA_VALIDATE"
-        ],
-        "manipulation_intensity": 3,
         "span_annotations": [
           {
             "tag": "DEFLECT_PHRASE",
@@ -579,20 +435,14 @@
             "tag": "SOCIAL_PROOF",
             "span_text": "report của 100 nhà đầu tư"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P3",
         "text": "Không cần. Tôi không quan tâm. Đừng gọi lại.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "REFUSING"
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -627,10 +477,6 @@
         "P1",
         "P3"
       ],
-      "primary_tactics": [
-        "SA_AUTH",
-        "SA_URGENCY"
-      ],
       "cialdini_principles": [
         "authority"
       ],
@@ -663,11 +509,6 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Đây là Cảnh sát kinh tế Hà Nội. Bà có liên quan đến vụ án rửa tiền 2 tỷ đồng đang điều tra.",
-        "speech_acts": [
-          "SA_AUTH",
-          "SA_THREAT"
-        ],
-        "manipulation_intensity": 5,
         "span_annotations": [
           {
             "tag": "FAKE_ID",
@@ -677,31 +518,20 @@
             "tag": "FAKE_VALIDATION",
             "span_text": "vụ án rửa tiền 2 tỷ đồng"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Sao lại... trời ơi...",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "FEARFUL"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Bà cần hợp tác ngay bây giờ, chuyển toàn bộ tài sản vào tài khoản an ninh để chúng tôi bảo vệ.",
-        "speech_acts": [
-          "SA_URGENCY",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 5,
         "span_annotations": [
           {
             "tag": "URGENCY_PHRASE",
@@ -711,20 +541,14 @@
             "tag": "REQUEST_INFO",
             "span_text": "chuyển toàn bộ tài sản"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P3",
         "text": "[Cúp máy]",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": "FEARFUL"
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -759,9 +583,6 @@
         "P1",
         "P2"
       ],
-      "primary_tactics": [
-        "SA_AUTH"
-      ],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.28,
@@ -790,53 +611,33 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Xin chào anh, đây là Techcombank. Chúng tôi gọi để thông báo thẻ tín dụng của anh sắp hết hạn vào tháng 6.",
-        "speech_acts": [
-          "SA_AUTH"
-        ],
-        "manipulation_intensity": 1,
         "span_annotations": [
           {
             "tag": "FAKE_ORG",
             "span_text": "Techcombank"
           }
-        ],
-        "response_type": null,
-        "cognitive_state": null
+        ]
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Vâng, tôi đã biết rồi, ngân hàng đã nhắn tin cho tôi.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "NEUTRAL"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Anh có muốn làm lại thẻ qua hotline hoặc đến chi nhánh không ạ?",
-        "speech_acts": [
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P2",
         "text": "Để tôi tự làm trên app, không cần qua điện thoại.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "NEUTRAL"
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -871,7 +672,6 @@
         "P1",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.75,
@@ -886,66 +686,35 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_ESCALATE",
-          "SA_REASSURE",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_BAIT",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_VALIDATE",
-          "SA_DEFLECT",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -981,7 +750,6 @@
         "P3",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.5,
@@ -996,112 +764,63 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_DEFLECT",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_CLOSE"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "FEARFUL"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_CLOSE",
-          "SA_DEFLECT",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 8: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       },
       {
         "turn_id": 9,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 9: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_URGENCY"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -1137,7 +856,6 @@
         "P3",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.5,
@@ -1152,116 +870,63 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_DEFLECT",
-          "SA_ESCALATE"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "NEUTRAL"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_CLOSE",
-          "SA_DEFLECT"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "NEUTRAL"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REQUEST",
-          "SA_URGENCY",
-          "SA_DEFLECT"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_DEFLECT",
-          "SA_VALIDATE"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 8: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 9,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 9: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_ESCALATE",
-          "SA_VALIDATE",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 4,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -1298,7 +963,6 @@
         "P4",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.75,
@@ -1313,165 +977,91 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_AUTH",
-          "SA_CLOSE"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_ESCALATE"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_THREAT",
-          "SA_AUTH",
-          "SA_URGENCY"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "FEARFUL"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REQUEST",
-          "SA_DEFLECT",
-          "SA_CLOSE"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 8: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_RESIST",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       },
       {
         "turn_id": 9,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 9: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_ESCALATE",
-          "SA_AUTH",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 10,
         "speaker": "victim",
         "phase": "P3",
         "text": "Victim turn 10: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       },
       {
         "turn_id": 11,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 11: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_CLOSE"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 12,
         "speaker": "victim",
         "phase": "P3",
         "text": "Victim turn 12: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_RESIST",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       },
       {
         "turn_id": 13,
         "speaker": "scammer",
         "phase": "P4",
         "text": "Scammer turn 13: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_URGENCY",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -1506,7 +1096,6 @@
         "P1",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.75,
@@ -1521,98 +1110,56 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_URGENCY"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REASSURE"
-        ],
-        "manipulation_intensity": 4,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_ESCALATE",
-          "SA_THREAT",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 8: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "FEARFUL"
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -1648,7 +1195,6 @@
         "P3",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.75,
@@ -1663,137 +1209,77 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_VALIDATE"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_DEFLECT",
-          "SA_REQUEST",
-          "SA_THREAT"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_THREAT"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_BAIT",
-          "SA_REQUEST"
-        ],
-        "manipulation_intensity": 4,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 8: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 9,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 9: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_THREAT"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 10,
         "speaker": "victim",
         "phase": "P3",
         "text": "Victim turn 10: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_RESIST",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 11,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 11: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REQUEST",
-          "SA_URGENCY"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -1827,7 +1313,6 @@
       "phases_present": [
         "P1"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.5,
@@ -1842,49 +1327,28 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_BAIT",
-          "SA_THREAT"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_CLOSE"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -1919,7 +1383,6 @@
         "P1",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.2,
@@ -1934,90 +1397,49 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_VALIDATE",
-          "SA_BAIT",
-          "SA_CLOSE"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REASSURE",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_RESIST",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_DEFLECT"
-        ],
-        "manipulation_intensity": 4,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_VALIDATE",
-          "SA_DEFLECT",
-          "SA_REASSURE"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -2054,7 +1476,6 @@
         "P4",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.2,
@@ -2069,164 +1490,91 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REASSURE"
-        ],
-        "manipulation_intensity": 4,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_VALIDATE",
-          "SA_THREAT",
-          "SA_AUTH"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_URGENCY",
-          "SA_ESCALATE",
-          "SA_AUTH"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_REFUSE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_AUTH"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 8: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 9,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 9: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_THREAT",
-          "SA_ESCALATE"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 10,
         "speaker": "victim",
         "phase": "P3",
         "text": "Victim turn 10: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 11,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 11: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_THREAT"
-        ],
-        "manipulation_intensity": 3,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 12,
         "speaker": "victim",
         "phase": "P3",
         "text": "Victim turn 12: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_QUESTION",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 13,
         "speaker": "scammer",
         "phase": "P4",
         "text": "Scammer turn 13: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_BAIT",
-          "SA_REASSURE",
-          "SA_DEFLECT"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       }
     ],
     "quality": {
@@ -2262,7 +1610,6 @@
         "P3",
         "P2"
       ],
-      "primary_tactics": [],
       "cialdini_principles": [],
       "cognitive_mechanisms": [],
       "ambiguity_score": 0.5,
@@ -2277,125 +1624,70 @@
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 1: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_ESCALATE",
-          "SA_REQUEST",
-          "SA_BAIT"
-        ],
-        "manipulation_intensity": 2,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 2,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 2: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "CURIOUS"
+        "span_annotations": []
       },
       {
         "turn_id": 3,
         "speaker": "scammer",
         "phase": "P1",
         "text": "Scammer turn 3: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_DEFLECT"
-        ],
-        "manipulation_intensity": 4,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 4,
         "speaker": "victim",
         "phase": "P1",
         "text": "Victim turn 4: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "CONCERNED"
+        "span_annotations": []
       },
       {
         "turn_id": 5,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 5: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_AUTH",
-          "SA_REASSURE",
-          "SA_CLOSE"
-        ],
-        "manipulation_intensity": 1,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 6,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 6: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_COMPLY",
-        "cognitive_state": "FEARFUL"
+        "span_annotations": []
       },
       {
         "turn_id": 7,
         "speaker": "scammer",
         "phase": "P2",
         "text": "Scammer turn 7: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REASSURE",
-          "SA_VALIDATE"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 8,
         "speaker": "victim",
         "phase": "P2",
         "text": "Victim turn 8: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_PARTIAL",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       },
       {
         "turn_id": 9,
         "speaker": "scammer",
         "phase": "P3",
         "text": "Scammer turn 9: synthetic text mô phỏng hội thoại lừa đảo.",
-        "speech_acts": [
-          "SA_REASSURE"
-        ],
-        "manipulation_intensity": 5,
-        "span_annotations": [],
-        "response_type": null,
-        "cognitive_state": null
+        "span_annotations": []
       },
       {
         "turn_id": 10,
         "speaker": "victim",
         "phase": "P3",
         "text": "Victim turn 10: phản hồi tự nhiên của nạn nhân.",
-        "speech_acts": [],
-        "manipulation_intensity": null,
-        "span_annotations": [],
-        "response_type": "VR_HESITATE",
-        "cognitive_state": "COMPLIANT"
+        "span_annotations": []
       }
     ],
     "quality": {

@@ -8,12 +8,10 @@ import plotly.graph_objects as go
 import pandas as pd
 from collections import Counter
 
-from src.schema import OUTCOME_COLORS, DOMAIN_COLORS, SSAT_COLORS, VCS_COLORS, SPAN_COLORS
-from src.stats import compute_stats, build_conversation_df, flatten_to_turn_df, flatten_to_span_df
+from src.schema import OUTCOME_COLORS, DOMAIN_COLORS, SPAN_COLORS
+from src.stats import compute_stats, build_conversation_df, flatten_to_turn_df, flatten_to_span_df, compute_span_tag_phase_matrix
 from src.visualize import (
     plot_phase_transition_heatmap,
-    plot_vcs_transition_heatmap,
-    plot_tactic_phase_heatmap,
 )
 
 _TPL = "plotly_white"
@@ -365,75 +363,53 @@ def render(session):
 
     c13, c14 = st.columns(2)
     with c13:
-        # SSAT frequency
-        if not df_t.empty:
-            ssat_counter: Counter = Counter()
-            col = "speech_acts" if "speech_acts" in df_t.columns else "ssat"
-            scammer_df = df_t[df_t["speaker"] == "scammer"]
-            for acts in scammer_df[col]:
-                if isinstance(acts, list):
-                    ssat_counter.update(acts)
-            if ssat_counter:
-                df_sa = pd.DataFrame(
-                    list(ssat_counter.items()), columns=["Tactic", "Count"]
-                ).sort_values("Count")
-                colors_sa = [SSAT_COLORS.get(t, "#94a3b8") for t in df_sa["Tactic"]]
-                fig = go.Figure(go.Bar(
-                    x=df_sa["Count"].tolist(), y=df_sa["Tactic"].tolist(),
-                    orientation="h", marker_color=colors_sa,
-                    text=df_sa["Count"].tolist(), textposition="outside",
-                ))
-                fig.update_layout(
-                    title="Scammer Speech Act (SSAT) Frequency",
-                    template=_TPL, height=_H2, showlegend=False,
-                    margin=dict(t=50, b=20, l=20, r=60),
-                    yaxis_tickfont_size=9,
-                )
-                st.plotly_chart(fig, use_container_width=True)
+        # Span Tag frequency (replaces SSAT)
+        if not df_s.empty:
+            span_freq = df_s["span_label"].value_counts().reset_index()
+            span_freq.columns = ["Span Tag", "Count"]
+            colors_sp = [SPAN_COLORS.get(t, "#94a3b8") for t in span_freq["Span Tag"]]
+            fig = go.Figure(go.Bar(
+                x=span_freq["Count"].tolist(), y=span_freq["Span Tag"].tolist(),
+                orientation="h", marker_color=colors_sp,
+                text=span_freq["Count"].tolist(), textposition="outside",
+            ))
+            fig.update_layout(
+                title="Span Tag Frequency (Scammer Turns)",
+                template=_TPL, height=_H2, showlegend=False,
+                margin=dict(t=50, b=20, l=20, r=60),
+                yaxis_tickfont_size=9,
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
     with c14:
-        # VCS distribution
+        # Span Density per turn (replaces VCS)
         if not df_t.empty:
-            vcs_col = "cognitive_state" if "cognitive_state" in df_t.columns else "vcs"
-            victim_df = df_t[df_t["speaker"] == "victim"]
-            vcs_counts = victim_df[vcs_col].dropna().value_counts().reset_index()
-            vcs_counts.columns = ["State", "Count"]
-            if not vcs_counts.empty:
-                colors_vcs = [VCS_COLORS.get(s, "#94a3b8") for s in vcs_counts["State"]]
-                fig = go.Figure(go.Bar(
-                    x=vcs_counts["State"].tolist(),
-                    y=vcs_counts["Count"].tolist(),
-                    marker_color=colors_vcs,
-                    text=vcs_counts["Count"].tolist(),
-                    textposition="outside",
-                ))
-                fig.update_layout(
-                    title="Victim Cognitive State (VCS) Distribution",
-                    template=_TPL, height=_H2, showlegend=False,
-                    margin=dict(t=50, b=50, l=20, r=20),
-                    xaxis_tickangle=-20, xaxis_tickfont_size=9,
+            scammer_df = df_t[df_t["speaker"] == "scammer"]
+            if not scammer_df.empty:
+                fig = px.histogram(
+                    scammer_df, x="n_spans", nbins=10,
+                    title="Span Density per Scammer Turn",
+                    labels={"n_spans": "# Spans", "count": "Turns"},
+                    color_discrete_sequence=["#6366f1"], template=_TPL,
                 )
+                fig.update_layout(height=_H2, margin=dict(t=50, b=40, l=40, r=20))
                 st.plotly_chart(fig, use_container_width=True)
 
     c15, c16 = st.columns(2)
     with c15:
-        # Manipulation Intensity histogram
-        intensities = df_t["manipulation_intensity"].dropna().tolist() if not df_t.empty else []
-        if intensities:
-            fig = px.histogram(
-                x=intensities, nbins=5,
-                title="Manipulation Intensity Distribution (Scammer Turns)",
-                labels={"x": "Intensity (1–5)", "y": "Số turns"},
-                color_discrete_sequence=["#ef4444"],
-                template=_TPL,
-            )
-            fig.update_layout(
-                height=_H, margin=dict(t=50, b=40, l=40, r=20),
-                xaxis=dict(dtick=1),
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("Không có manipulation_intensity trong dữ liệu.")
+        # Span Count histogram
+        if not df_t.empty:
+            scammer_spans = df_t[df_t["speaker"] == "scammer"]["n_spans"].tolist()
+            if scammer_spans:
+                fig = px.histogram(
+                    x=scammer_spans, nbins=8,
+                    title="Spans per Scammer Turn",
+                    labels={"x": "# Spans", "y": "Turns"},
+                    color_discrete_sequence=["#ef4444"],
+                    template=_TPL,
+                )
+                fig.update_layout(height=_H, margin=dict(t=50, b=40, l=40, r=20))
+                st.plotly_chart(fig, use_container_width=True)
 
     with c16:
         # Span Label Distribution
@@ -478,39 +454,35 @@ def render(session):
         st.plotly_chart(fig, use_container_width=True)
 
     with c18:
-        # Victim Response Type distribution
-        if not df_t.empty:
-            vrt_col = "response_type" if "response_type" in df_t.columns else "vrt"
-            vrt_counts = (
-                df_t[df_t["speaker"] == "victim"][vrt_col]
-                .dropna()
-                .replace("", pd.NA)
-                .dropna()
-                .value_counts()
-                .reset_index()
+        # Turns per conversation x outcome scatter
+        if not df_t.empty and not df_c.empty:
+            fig = px.box(
+                df_c, x="outcome", y="n_turns",
+                color="outcome", color_discrete_map=OUTCOME_COLORS,
+                title="Turn Count by Outcome",
+                template=_TPL,
             )
-            vrt_counts.columns = ["Response Type", "Count"]
-            if not vrt_counts.empty:
-                fig = px.bar(
-                    vrt_counts, x="Count", y="Response Type", orientation="h",
-                    title="Victim Response Type Distribution",
-                    color_discrete_sequence=["#06b6d4"], template=_TPL, text="Count",
-                )
-                fig.update_traces(textposition="outside")
-                fig.update_layout(
-                    height=_H, showlegend=False,
-                    margin=dict(t=50, b=20, l=20, r=60),
-                    yaxis_tickfont_size=9,
-                )
-                st.plotly_chart(fig, use_container_width=True)
+            fig.update_layout(
+                height=_H, margin=dict(t=50, b=40, l=40, r=20),
+                showlegend=False, xaxis_title="Outcome", yaxis_title="# Turns",
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-    st.plotly_chart(plot_tactic_phase_heatmap(df_t), use_container_width=True)
+    # Span Tag × Phase heatmap (replaces tactic_phase)
+    matrix_stp = compute_span_tag_phase_matrix(df_t)
+    if not matrix_stp.empty:
+        fig_stp = px.imshow(
+            matrix_stp, text_auto=True, color_continuous_scale="Blues",
+            title="Span Tag × Phase Heatmap",
+        )
+        fig_stp.update_layout(height=320, margin=dict(t=50, b=20, l=40, r=20))
+        st.plotly_chart(fig_stp, use_container_width=True)
 
     c19, c20 = st.columns(2)
     with c19:
         st.plotly_chart(plot_phase_transition_heatmap(df_t), use_container_width=True)
     with c20:
-        st.plotly_chart(plot_vcs_transition_heatmap(df_t), use_container_width=True)
+        st.info("VCS transition matrix không còn khả dụng (cognitive_state đã bị xóa).")
 
     st.markdown("---")
 
@@ -727,8 +699,7 @@ def render(session):
             "conversations_v2.csv", "text/csv",
         )
     with st.expander("Turn Table"):
-        df_t_disp = df_t.drop(columns=["ssat", "speech_acts"], errors="ignore")
-        st.dataframe(df_t_disp, use_container_width=True)
+        st.dataframe(df_t, use_container_width=True)
 
 
 # ─── Helpers ──────────────────────────────────────────────────────

@@ -1,12 +1,13 @@
 """
-validators.py — Schema + logic validation for ViScamDial v2.
-Backward compatible with legacy v1 schema.
+validators.py — Schema + logic validation for ViScamDial v2 (Span-only).
+Turn-level labels (speech_acts, cognitive_state, response_type, manipulation_intensity)
+đã bị xóa. Chỉ validate span_annotations per turn.
 """
 from typing import Dict, Any, List, Tuple
 
 from src.schema import (
-    VALID_OUTCOMES, VALID_PHASES, VALID_SSAT, VALID_VRT, VALID_VCS,
-    VALID_SPAN_LABELS, VALID_DOMAIN_L1, PHASE_ORDER,
+    VALID_OUTCOMES, VALID_PHASES, VALID_SPAN_LABELS,
+    VALID_DOMAIN_L1, PHASE_ORDER, get_turn_span_tags,
 )
 
 
@@ -44,37 +45,26 @@ def validate_basic_schema(conv: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     for t in conv.get("turns", []):
         turn_id = t.get("turn_id", "?")
         speaker = t.get("speaker", "")
+
         if speaker not in {"scammer", "victim", ""}:
             errors.append(f"[{cid}] Turn {turn_id}: invalid speaker '{speaker}' (must be scammer/victim)")
 
-        # speech_acts must be list
-        sa = t.get("speech_acts")
-        if sa is not None and not isinstance(sa, list):
-            errors.append(f"[{cid}] Turn {turn_id}: speech_acts must be a list")
-        if isinstance(sa, list):
-            for act in sa:
-                if act not in VALID_SSAT:
-                    warnings.append(f"[{cid}] Turn {turn_id}: unknown speech_act '{act}'")
+        # phase validation
+        phase = t.get("phase")
+        if phase and phase not in VALID_PHASES:
+            warnings.append(f"[{cid}] Turn {turn_id}: unknown phase '{phase}'")
 
-        # manipulation_intensity range
-        mi = t.get("manipulation_intensity")
-        if mi is not None:
-            try:
-                mi_val = int(mi)
-                if not (1 <= mi_val <= 5):
-                    errors.append(f"[{cid}] Turn {turn_id}: manipulation_intensity {mi} not in [1,5]")
-            except (TypeError, ValueError):
-                errors.append(f"[{cid}] Turn {turn_id}: manipulation_intensity must be int 1-5")
-
-        # VCS validity
-        vcs = t.get("cognitive_state")
-        if vcs and vcs not in VALID_VCS:
-            warnings.append(f"[{cid}] Turn {turn_id}: unknown cognitive_state '{vcs}'")
-
-        # VRT validity
-        vrt = t.get("response_type")
-        if vrt and vrt not in VALID_VRT:
-            warnings.append(f"[{cid}] Turn {turn_id}: unknown response_type '{vrt}'")
+        # span_annotations validation
+        spans = t.get("span_annotations")
+        if spans is not None and not isinstance(spans, list):
+            errors.append(f"[{cid}] Turn {turn_id}: span_annotations must be a list")
+        if isinstance(spans, list):
+            for sp in spans:
+                tag = sp.get("tag", "")
+                if tag and tag not in VALID_SPAN_LABELS:
+                    warnings.append(f"[{cid}] Turn {turn_id}: unknown span tag '{tag}'")
+                if not sp.get("span_text"):
+                    warnings.append(f"[{cid}] Turn {turn_id}: span annotation missing span_text for tag '{tag}'")
 
     # Logic validation: phase sequence non-decreasing
     phases = [t.get("phase") for t in conv.get("turns", []) if t.get("phase")]
@@ -84,24 +74,23 @@ def validate_basic_schema(conv: Dict[str, Any]) -> Tuple[List[str], List[str]]:
             warnings.append(
                 f"[{cid}] Phase sequence decreasing at turn {i+1}: {phases[i-1]} → {phases[i]}"
             )
-            break  # Only report first violation
+            break
 
-    # Logic: SA_DEFLECT should follow victim suspicion
+    # Logic validation: REQUEST_INFO span should not appear in P1 without prior identity span
     turns_list = conv.get("turns", [])
-    for i, t in enumerate(turns_list):
-        if t.get("speaker") == "scammer" and "SA_DEFLECT" in (t.get("speech_acts") or []):
-            # Check if previous victim turn had suspicion signal
-            prev_victim = next(
-                (turns_list[j] for j in range(i - 1, -1, -1) if turns_list[j].get("speaker") == "victim"),
-                None
-            )
-            if prev_victim:
-                vcs = prev_victim.get("cognitive_state", "")
-                vrt = prev_victim.get("response_type", "")
-                if vcs not in {"SUSPICIOUS", "RESISTANT", "REFUSING"} and vrt not in {"VR_QUESTION", "VR_RESIST", "VR_REFUSE"}:
-                    warnings.append(
-                        f"[{cid}] Turn {t.get('turn_id','?')}: SA_DEFLECT without preceding victim suspicion signal"
-                    )
+    seen_identity = False
+    for t in turns_list:
+        if t.get("speaker") != "scammer":
+            continue
+        tags = get_turn_span_tags(t)
+        if tags & {"FAKE_ID", "FAKE_ORG"}:
+            seen_identity = True
+        if "REQUEST_INFO" in tags and not seen_identity:
+            phase = t.get("phase", "?")
+            if phase in {"P1", "P2"}:
+                warnings.append(
+                    f"[{cid}] Turn {t.get('turn_id','?')}: REQUEST_INFO span in {phase} without prior identity setup"
+                )
 
     return errors, warnings
 
@@ -109,7 +98,7 @@ def validate_basic_schema(conv: Dict[str, Any]) -> Tuple[List[str], List[str]]:
 def validate_dataset(dataset: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Validate toàn bộ dataset. Returns validation summary.
-    
+
     Returns:
         {n_valid, n_errors, valid_samples, all_errors, all_warnings, n_warnings}
     """
@@ -141,35 +130,45 @@ def check_metric_readiness(conv: Dict[str, Any]) -> Dict[str, Any]:
     """
     turns = conv.get("turns", [])
     scammer_turns = [t for t in turns if t.get("speaker") == "scammer"]
-    victim_turns = [t for t in turns if t.get("speaker") == "victim"]
     cm = conv.get("conversation_meta", {})
 
-    has_speech_acts = any(t.get("speech_acts") for t in scammer_turns)
-    has_manipulation = any(t.get("manipulation_intensity") is not None for t in scammer_turns)
-    has_vcs = any(t.get("cognitive_state") for t in victim_turns)
-    has_vrt = any(t.get("response_type") for t in victim_turns)
+    has_spans = any(t.get("span_annotations") for t in scammer_turns)
     has_phases = bool(cm.get("phases_present") or any(t.get("phase") for t in turns))
-    has_personas = bool(conv.get("personas"))
-    has_quality = bool(conv.get("quality"))
-    has_spans = any(t.get("span_annotations") for t in turns)
     has_text = any(t.get("text") for t in turns)
+    has_quality = bool(conv.get("quality"))
 
     return {
         "AI": {
-            "ready": has_speech_acts,
-            "missing": ([] if has_speech_acts else ["speech_acts"])
-                       + ([] if has_manipulation else ["manipulation_intensity"])
-                       + ([] if has_vcs else ["cognitive_state"]),
+            "ready": has_spans,
+            "missing": [] if has_spans else ["span_annotations"],
         },
         "DS": {
-            "ready": has_speech_acts and has_text,
-            "missing": ([] if has_speech_acts else ["speech_acts"])
+            "ready": has_spans and has_text,
+            "missing": ([] if has_spans else ["span_annotations"])
                        + ([] if has_text else ["text"]),
         },
-        "TCS": {"ready": has_speech_acts, "missing": [] if has_speech_acts else ["speech_acts"]},
-        "LDS": {"ready": has_text, "missing": [] if has_text else ["text"]},
-        "PCS": {"ready": has_phases, "missing": [] if has_phases else ["phases/phase labels"]},
-        "VSVS": {"ready": has_vcs, "missing": [] if has_vcs else ["cognitive_state"]},
-        "AQS": {"ready": True, "missing": ([] if has_spans else ["span_annotations (partial)"])},
-        "DBR": {"ready": True, "missing": []},
+        "TCS": {
+            "ready": has_spans,
+            "missing": [] if has_spans else ["span_annotations"],
+        },
+        "LDS": {
+            "ready": has_text,
+            "missing": [] if has_text else ["text"],
+        },
+        "PCS": {
+            "ready": has_phases,
+            "missing": [] if has_phases else ["phase labels"],
+        },
+        "VSVS": {
+            "ready": has_spans,
+            "missing": [] if has_spans else ["span_annotations"],
+        },
+        "AQS": {
+            "ready": True,
+            "missing": [] if has_spans else ["span_annotations (partial)"],
+        },
+        "DBR": {
+            "ready": True,
+            "missing": [],
+        },
     }

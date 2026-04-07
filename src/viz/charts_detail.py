@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 
-from src.schema import SSAT_COLORS, VCS_COLORS, SPAN_COLORS
+from src.schema import SPAN_COLORS
 
 
 _TEMPLATE = "plotly_white"

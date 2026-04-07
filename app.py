@@ -13,7 +13,7 @@ from src.validators import validate_dataset
 from src.stats import build_conversation_df, flatten_to_turn_df, flatten_to_span_df
 from src.schema import (
     VALID_OUTCOMES, VALID_DOMAIN_L1, VALID_AMBIGUITY_LEVELS,
-    VALID_PHASES, VALID_SSAT, VALID_SPAN_LABELS, VCS_LEGACY_MAP_DEFAULT,
+    VALID_PHASES, VALID_SPAN_LABELS,
 )
 from src.constants import DS_TIER_THRESHOLDS
 
@@ -103,8 +103,6 @@ class AppSession:
             st.session_state.df_span = pd.DataFrame()
         if "gold_set" not in st.session_state:
             st.session_state.gold_set = None
-        if "vcs_map" not in st.session_state:
-            st.session_state.vcs_map = dict(VCS_LEGACY_MAP_DEFAULT)
         # Sidebar filter state
         if "_f_outcome" not in st.session_state:
             st.session_state._f_outcome = []
@@ -140,10 +138,6 @@ class AppSession:
     @gold_set.setter
     def gold_set(self, val):
         st.session_state.gold_set = val
-
-    @property
-    def vcs_map(self):
-        return st.session_state.vcs_map
 
     def refresh(self):
         convs = self.conversations
@@ -231,13 +225,6 @@ with st.sidebar:
     min_t, max_t = st.slider("Turn range", 1, max(max_turns, 50), (1, max(max_turns, 50)), key="f_turns")
     st.session_state._f_min_turns = min_t
     st.session_state._f_max_turns = max_t
-
-    st.markdown("---")
-    st.subheader("⚙️ VCS Legacy Mapping")
-    st.caption("How to map old VCS labels (CONFUSED/ANXIOUS)")
-    confused_map = st.selectbox("CONFUSED →", ["CURIOUS", "CONCERNED"], key="vcs_confused")
-    anxious_map = st.selectbox("ANXIOUS →", ["CONCERNED", "FEARFUL"], key="vcs_anxious")
-    st.session_state.vcs_map = {"CONFUSED": confused_map, "ANXIOUS": anxious_map}
 
     st.markdown("---")
     n_total = len(session.conversations)

@@ -1,6 +1,7 @@
 """
 schema.py — Label enums, taxonomy, và helpers cho ViScamDial-Bench v2.
-Backward compatible với schema v1 cũ (Outcome SCAM/AMBIGUOUS/LEGIT, VCS cũ...).
+Span-only schema: chỉ dùng SpanLabel làm nhãn per-turn.
+Backward compatible với schema v1 cũ (Outcome SCAM/AMBIGUOUS/LEGIT).
 """
 from enum import Enum
 from typing import List, Dict, Set
@@ -126,79 +127,7 @@ PHASE_ORDER = {"P1": 1, "P2": 2, "P3": 3, "P4": 4, "P5": 5, "P6": 6}
 
 
 # ─────────────────────────────────────────────────────────────────
-# SPEECH ACT TACTICS (SSAT)
-# ─────────────────────────────────────────────────────────────────
-class SSAT(str, Enum):
-    SA_AUTH = "SA_AUTH"
-    SA_THREAT = "SA_THREAT"
-    SA_URGENCY = "SA_URGENCY"
-    SA_REASSURE = "SA_REASSURE"
-    SA_REQUEST = "SA_REQUEST"
-    SA_DEFLECT = "SA_DEFLECT"
-    SA_VALIDATE = "SA_VALIDATE"
-    SA_ESCALATE = "SA_ESCALATE"
-    SA_BAIT = "SA_BAIT"
-    SA_CLOSE = "SA_CLOSE"
-
-VALID_SSAT = {e.value for e in SSAT}
-ALL_TACTICS = list(VALID_SSAT)
-
-
-# ─────────────────────────────────────────────────────────────────
-# VICTIM RESPONSE TYPE (VRT)
-# ─────────────────────────────────────────────────────────────────
-class VRT(str, Enum):
-    VR_COMPLY = "VR_COMPLY"
-    VR_PARTIAL = "VR_PARTIAL"
-    VR_HESITATE = "VR_HESITATE"
-    VR_QUESTION = "VR_QUESTION"
-    VR_RESIST = "VR_RESIST"
-    VR_REFUSE = "VR_REFUSE"
-    VR_EXPOSE = "VR_EXPOSE"
-
-VALID_VRT = {e.value for e in VRT}
-
-
-# ─────────────────────────────────────────────────────────────────
-# VICTIM COGNITIVE STATE (VCS) — v2 canonical set
-# ─────────────────────────────────────────────────────────────────
-class VCS(str, Enum):
-    NEUTRAL = "NEUTRAL"
-    CURIOUS = "CURIOUS"
-    CONCERNED = "CONCERNED"
-    FEARFUL = "FEARFUL"
-    COMPLIANT = "COMPLIANT"
-    SUSPICIOUS = "SUSPICIOUS"
-    RESISTANT = "RESISTANT"
-    REFUSING = "REFUSING"
-    # Legacy v1 (kept for backward compat, will be mapped)
-    CONFUSED = "CONFUSED"
-    ANXIOUS = "ANXIOUS"
-
-VALID_VCS = {e.value for e in VCS}
-VALID_VCS_V2 = {"NEUTRAL", "CURIOUS", "CONCERNED", "FEARFUL", "COMPLIANT", "SUSPICIOUS", "RESISTANT", "REFUSING"}
-
-# Legacy VCS mapping (configurable at runtime via app settings)
-VCS_LEGACY_MAP_DEFAULT: Dict[str, str] = {
-    "CONFUSED": "CURIOUS",
-    "ANXIOUS": "CONCERNED",
-}
-
-# Valid state transitions matrix (VSVS metric)
-VALID_TRANSITIONS: Dict[str, Set[str]] = {
-    "NEUTRAL":    {"CURIOUS", "CONCERNED", "NEUTRAL"},
-    "CURIOUS":    {"NEUTRAL", "CONCERNED", "SUSPICIOUS", "CURIOUS"},
-    "CONCERNED":  {"CURIOUS", "FEARFUL", "SUSPICIOUS", "CONCERNED", "NEUTRAL"},
-    "FEARFUL":    {"COMPLIANT", "SUSPICIOUS", "RESISTANT", "FEARFUL"},
-    "COMPLIANT":  {"FEARFUL", "SUSPICIOUS", "COMPLIANT"},
-    "SUSPICIOUS": {"RESISTANT", "REFUSING", "CURIOUS", "SUSPICIOUS"},
-    "RESISTANT":  {"REFUSING", "SUSPICIOUS", "RESISTANT"},
-    "REFUSING":   {"REFUSING"},
-}
-
-
-# ─────────────────────────────────────────────────────────────────
-# SPAN LABELS
+# SPAN LABELS — nhãn duy nhất ở turn level (token/span-level)
 # ─────────────────────────────────────────────────────────────────
 class SpanLabel(str, Enum):
     FAKE_ID = "FAKE_ID"
@@ -211,16 +140,18 @@ class SpanLabel(str, Enum):
     SOCIAL_PROOF = "SOCIAL_PROOF"
 
 VALID_SPAN_LABELS = {e.value for e in SpanLabel}
+ALL_SPAN_TAGS = list(VALID_SPAN_LABELS)
 
-# Tactics that REQUIRE at least one span annotation
-TACTICS_REQUIRING_SPAN: Dict[str, str] = {
-    "SA_REQUEST": "REQUEST_INFO",
-    "SA_THREAT": "THREAT_PHRASE",
-    "SA_URGENCY": "URGENCY_PHRASE",
-    "SA_AUTH": "FAKE_ID",
-    "SA_VALIDATE": "FAKE_VALIDATION",
-    "SA_DEFLECT": "DEFLECT_PHRASE",
-}
+# Nhóm span theo "cường độ thao túng" để suy luận intensity
+HIGH_INTENSITY_SPANS = {"THREAT_PHRASE", "URGENCY_PHRASE", "REQUEST_INFO"}
+MEDIUM_INTENSITY_SPANS = {"FAKE_VALIDATION", "SOCIAL_PROOF", "DEFLECT_PHRASE"}
+LOW_INTENSITY_SPANS = {"FAKE_ID", "FAKE_ORG"}
+
+# Span báo hiệu leo thang chiến thuật (dùng cho VSVS span-transition)
+ESCALATION_SPANS = {"THREAT_PHRASE", "REQUEST_INFO", "URGENCY_PHRASE"}
+
+# Tín hiệu scam (dùng cho prefix signal analysis)
+SCAM_SIGNAL_SPANS = {"THREAT_PHRASE", "REQUEST_INFO", "URGENCY_PHRASE", "FAKE_VALIDATION", "SOCIAL_PROOF"}
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -264,19 +195,6 @@ SPEAKER_COLORS = {
     "victim": "#3498db",
 }
 
-SSAT_COLORS = {
-    "SA_AUTH": "#8e44ad",
-    "SA_THREAT": "#c0392b",
-    "SA_URGENCY": "#e67e22",
-    "SA_REASSURE": "#27ae60",
-    "SA_REQUEST": "#2980b9",
-    "SA_DEFLECT": "#7f8c8d",
-    "SA_VALIDATE": "#16a085",
-    "SA_ESCALATE": "#d35400",
-    "SA_BAIT": "#8e44ad",
-    "SA_CLOSE": "#2c3e50",
-}
-
 SPAN_COLORS = {
     "FAKE_ID": "#e74c3c",
     "FAKE_ORG": "#e67e22",
@@ -288,20 +206,6 @@ SPAN_COLORS = {
     "SOCIAL_PROOF": "#27ae60",
 }
 
-VCS_COLORS = {
-    "NEUTRAL": "#95a5a6",
-    "CURIOUS": "#3498db",
-    "CONCERNED": "#f39c12",
-    "FEARFUL": "#e74c3c",
-    "COMPLIANT": "#e67e22",
-    "SUSPICIOUS": "#9b59b6",
-    "RESISTANT": "#1abc9c",
-    "REFUSING": "#27ae60",
-    # Legacy
-    "CONFUSED": "#3498db",
-    "ANXIOUS": "#f39c12",
-}
-
 DOMAIN_COLORS = {
     "AUTHORITY_IMPERSONATION": "#e74c3c",
     "COMMERCIAL_FRAUD": "#f39c12",
@@ -311,12 +215,9 @@ DOMAIN_COLORS = {
     "UNKNOWN": "#95a5a6",
 }
 
-
-# ─────────────────────────────────────────────────────────────────
-# SIGNAL SETS (prefix evidence curve)
-# ─────────────────────────────────────────────────────────────────
-SCAM_SIGNAL_SSAT = {"SA_THREAT", "SA_REQUEST", "SA_URGENCY", "SA_VALIDATE", "SA_BAIT"}
-SCAM_SIGNAL_SPANS = {"THREAT_PHRASE", "REQUEST_INFO", "URGENCY_PHRASE", "FAKE_VALIDATION", "SOCIAL_PROOF"}
+# Legacy color maps (kept for backward compat with charts that may reference them)
+SSAT_COLORS: Dict[str, str] = {}   # Deprecated — tactics removed
+VCS_COLORS: Dict[str, str] = {}    # Deprecated — cognitive states removed
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -337,14 +238,22 @@ def is_valid_ambiguity_level(val: str) -> bool:
 def is_valid_phase(val: str) -> bool:
     return val in VALID_PHASES
 
-def is_valid_ssat(val: str) -> bool:
-    return val in VALID_SSAT
-
-def is_valid_vrt(val: str) -> bool:
-    return val in VALID_VRT
-
-def is_valid_vcs(val: str) -> bool:
-    return val in VALID_VCS
-
 def is_valid_span_label(val: str) -> bool:
     return val in VALID_SPAN_LABELS
+
+
+def get_turn_span_tags(turn: Dict) -> Set[str]:
+    """Trả về tập các span tag có trong một turn."""
+    return {
+        sp.get("tag", "") for sp in (turn.get("span_annotations") or [])
+        if sp.get("tag")
+    }
+
+
+def get_conv_span_tags(conv: Dict) -> Set[str]:
+    """Trả về tập các span tag có trong toàn bộ conversation (scammer turns)."""
+    tags: Set[str] = set()
+    for t in conv.get("turns", []):
+        if t.get("speaker") == "scammer":
+            tags.update(get_turn_span_tags(t))
+    return tags

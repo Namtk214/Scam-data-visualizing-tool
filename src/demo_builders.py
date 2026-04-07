@@ -1,11 +1,7 @@
 """
-demo_builders.py — Build demo dataset v2 schema đầy đủ.
-Tối thiểu 5 conversations:
-  1. Authority impersonation (Vietcombank) — FULL_COMPLIANCE — rõ ràng
-  2. Commercial fraud (Shopee) — PARTIAL_COMPLIANCE — mờ
-  3. Investment fraud (crypto) — REFUSAL — nạn nhân từ chối
-  4. Interrupted (interrupted scam)
-  5. Non-scam (LEGIT) — legitimate call
+demo_builders.py — Build demo dataset v2 schema (span-only).
+Không còn speech_acts, manipulation_intensity, response_type, cognitive_state.
+Mỗi scammer turn chứa span_annotations[{tag, span_text}].
 """
 from typing import List, Dict, Any
 import random
@@ -40,7 +36,7 @@ def _conv_vietcombank() -> Dict[str, Any]:
             "total_turns": 10,
             "outcome": "FULL_COMPLIANCE",
             "phases_present": ["P1", "P2", "P3", "P4", "P5"],
-            "primary_tactics": ["SA_AUTH", "SA_URGENCY", "SA_THREAT"],
+            "primary_span_tags": ["FAKE_ORG", "URGENT_CLAIM", "REQUEST_INFO"],
             "cialdini_principles": ["authority", "scarcity"],
             "cognitive_mechanisms": ["fear_injection", "cognitive_overload"],
             "ambiguity_score": 0.18,
@@ -55,55 +51,48 @@ def _conv_vietcombank() -> Dict[str, Any]:
                        "vulnerability_profile": "low_digital_literacy", "prior_scam_knowledge": "none"},
         },
         "turns": [
-            {"turn_id": 1, "speaker": "scammer", "phase": "P1", "text": "Xin chào, đây là Ngân hàng Vietcombank, phòng xử lý giao dịch bất thường. Tôi cần xác minh tài khoản số cuối 4523 của chị.",
-             "speech_acts": ["SA_AUTH", "SA_VALIDATE"],
-             "manipulation_intensity": 2,
-             "span_annotations": [{"tag": "FAKE_ORG", "span_text": "Ngân hàng Vietcombank, phòng xử lý giao dịch bất thường"},
-                                   {"tag": "FAKE_VALIDATION", "span_text": "tài khoản số cuối 4523"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 2, "speaker": "victim", "phase": "P1", "text": "Vâng, đúng rồi ạ. Có vấn đề gì không?",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_QUESTION", "cognitive_state": "NEUTRAL"},
-            {"turn_id": 3, "speaker": "scammer", "phase": "P3", "text": "Tài khoản của chị vừa có 2 giao dịch lạ tổng cộng 47 triệu đồng. Chúng tôi cần đóng băng ngay để bảo vệ chị.",
-             "speech_acts": ["SA_THREAT", "SA_URGENCY", "SA_VALIDATE"],
-             "manipulation_intensity": 4,
-             "span_annotations": [{"tag": "FAKE_VALIDATION", "span_text": "2 giao dịch lạ tổng cộng 47 triệu đồng"},
-                                   {"tag": "URGENCY_PHRASE", "span_text": "đóng băng ngay"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 4, "speaker": "victim", "phase": "P3", "text": "Ôi trời, sao lại thế? Tôi không có làm giao dịch gì cả.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_QUESTION", "cognitive_state": "FEARFUL"},
-            {"turn_id": 5, "speaker": "scammer", "phase": "P4", "text": "Chính xác, đây là giao dịch bất thường. Để bảo vệ tiền của chị, chúng tôi sẽ chuyển tài khoản vào hệ thống bảo mật. Chị cần cung cấp mã OTP được gửi vào điện thoại ngay bây giờ.",
-             "speech_acts": ["SA_REASSURE", "SA_REQUEST"],
-             "manipulation_intensity": 4,
-             "span_annotations": [{"tag": "REQUEST_INFO", "span_text": "cung cấp mã OTP được gửi vào điện thoại ngay bây giờ"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 6, "speaker": "victim", "phase": "P4", "text": "Nhưng mà... tôi có nên gửi không? Ngân hàng có thực sự cần OTP không?",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_HESITATE", "cognitive_state": "SUSPICIOUS"},
-            {"turn_id": 7, "speaker": "scammer", "phase": "P4", "text": "Đây là quy trình bắt buộc của ngân hàng. Nếu chị không xác nhận trong 5 phút, tài khoản sẽ bị khóa vĩnh viễn.",
-             "speech_acts": ["SA_VALIDATE", "SA_THREAT", "SA_URGENCY"],
-             "manipulation_intensity": 5,
-             "span_annotations": [{"tag": "FAKE_VALIDATION", "span_text": "quy trình bắt buộc của ngân hàng"},
-                                   {"tag": "THREAT_PHRASE", "span_text": "tài khoản sẽ bị khóa vĩnh viễn"},
-                                   {"tag": "URGENCY_PHRASE", "span_text": "trong 5 phút"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 8, "speaker": "victim", "phase": "P4", "text": "Ừ thôi được, mã OTP của tôi là 483726.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_COMPLY", "cognitive_state": "COMPLIANT"},
-            {"turn_id": 9, "speaker": "scammer", "phase": "P5", "text": "Cảm ơn chị, tài khoản của chị đã được bảo mật thành công.",
-             "speech_acts": ["SA_CLOSE", "SA_REASSURE"],
-             "manipulation_intensity": 1,
-             "span_annotations": [],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 10, "speaker": "victim", "phase": "P5", "text": "Cảm ơn anh.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_COMPLY", "cognitive_state": "COMPLIANT"},
+            {"turn_id": 1, "speaker": "scammer", "phase": "P1",
+             "text": "Xin chào, đây là Ngân hàng Vietcombank, phòng xử lý giao dịch bất thường. Tôi cần xác minh tài khoản số cuối 4523 của chị.",
+             "span_annotations": [
+                 {"tag": "FAKE_ORG", "span_text": "Ngân hàng Vietcombank, phòng xử lý giao dịch bất thường"},
+                 {"tag": "FAKE_VALIDATION", "span_text": "tài khoản số cuối 4523"},
+             ]},
+            {"turn_id": 2, "speaker": "victim", "phase": "P1",
+             "text": "Vâng, đúng rồi ạ. Có vấn đề gì không?",
+             "span_annotations": []},
+            {"turn_id": 3, "speaker": "scammer", "phase": "P3",
+             "text": "Tài khoản của chị vừa có 2 giao dịch lạ tổng cộng 47 triệu đồng. Chúng tôi cần đóng băng ngay để bảo vệ chị.",
+             "span_annotations": [
+                 {"tag": "FAKE_VALIDATION", "span_text": "2 giao dịch lạ tổng cộng 47 triệu đồng"},
+                 {"tag": "URGENT_CLAIM", "span_text": "đóng băng ngay"},
+             ]},
+            {"turn_id": 4, "speaker": "victim", "phase": "P3",
+             "text": "Ôi trời, sao lại thế? Tôi không có làm giao dịch gì cả.",
+             "span_annotations": []},
+            {"turn_id": 5, "speaker": "scammer", "phase": "P4",
+             "text": "Chính xác, đây là giao dịch bất thường. Để bảo vệ tiền của chị, chúng tôi sẽ chuyển tài khoản vào hệ thống bảo mật. Chị cần cung cấp mã OTP được gửi vào điện thoại ngay bây giờ.",
+             "span_annotations": [
+                 {"tag": "REQUEST_INFO", "span_text": "cung cấp mã OTP được gửi vào điện thoại ngay bây giờ"},
+             ]},
+            {"turn_id": 6, "speaker": "victim", "phase": "P4",
+             "text": "Nhưng mà... tôi có nên gửi không? Ngân hàng có thực sự cần OTP không?",
+             "span_annotations": []},
+            {"turn_id": 7, "speaker": "scammer", "phase": "P4",
+             "text": "Đây là quy trình bắt buộc của ngân hàng. Nếu chị không xác nhận trong 5 phút, tài khoản sẽ bị khóa vĩnh viễn.",
+             "span_annotations": [
+                 {"tag": "FAKE_VALIDATION", "span_text": "quy trình bắt buộc của ngân hàng"},
+                 {"tag": "THREAT_PHRASE", "span_text": "tài khoản sẽ bị khóa vĩnh viễn"},
+                 {"tag": "URGENT_CLAIM", "span_text": "trong 5 phút"},
+             ]},
+            {"turn_id": 8, "speaker": "victim", "phase": "P4",
+             "text": "Ừ thôi được, mã OTP của tôi là 483726.",
+             "span_annotations": []},
+            {"turn_id": 9, "speaker": "scammer", "phase": "P5",
+             "text": "Cảm ơn chị, tài khoản của chị đã được bảo mật thành công.",
+             "span_annotations": []},
+            {"turn_id": 10, "speaker": "victim", "phase": "P5",
+             "text": "Cảm ơn anh.",
+             "span_annotations": []},
         ],
         "quality": {
             "writer_id": "W01", "expert_reviewer_id": "EX01",
@@ -131,7 +120,7 @@ def _conv_shopee() -> Dict[str, Any]:
             "total_turns": 8,
             "outcome": "PARTIAL_COMPLIANCE",
             "phases_present": ["P1", "P2", "P3", "P4"],
-            "primary_tactics": ["SA_AUTH", "SA_REASSURE", "SA_DEFLECT"],
+            "primary_span_tags": ["FAKE_ORG", "DEFLECT_BLAME", "REQUEST_INFO"],
             "cialdini_principles": ["authority", "liking"],
             "cognitive_mechanisms": ["false_authority", "manufactured_urgency"],
             "ambiguity_score": 0.52,
@@ -146,45 +135,41 @@ def _conv_shopee() -> Dict[str, Any]:
                        "vulnerability_profile": "moderate_digital_literacy", "prior_scam_knowledge": "low"},
         },
         "turns": [
-            {"turn_id": 1, "speaker": "scammer", "phase": "P1", "text": "Dạ anh ơi, em là nhân viên hỗ trợ Shopee. Em thấy đơn hàng của anh bị lỗi thanh toán, anh có được thông báo không ạ?",
-             "speech_acts": ["SA_AUTH", "SA_BAIT"],
-             "manipulation_intensity": 2,
-             "span_annotations": [{"tag": "FAKE_ORG", "span_text": "nhân viên hỗ trợ Shopee"},
-                                   {"tag": "FAKE_VALIDATION", "span_text": "đơn hàng của anh bị lỗi thanh toán"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 2, "speaker": "victim", "phase": "P1", "text": "Lỗi thanh toán? Mình không thấy thông báo gì lúc mua hàng.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_QUESTION", "cognitive_state": "CURIOUS"},
-            {"turn_id": 3, "speaker": "scammer", "phase": "P2", "text": "Đúng vậy anh, hệ thống bị lỗi nên không báo ạ. Bên em kiểm tra thấy anh bị trừ tiền 2 lần rồi. Em muốn giúp anh hoàn tiền.",
-             "speech_acts": ["SA_VALIDATE", "SA_REASSURE"],
-             "manipulation_intensity": 3,
-             "span_annotations": [{"tag": "FAKE_VALIDATION", "span_text": "hệ thống bị lỗi nên không báo"},
-                                   {"tag": "SOCIAL_PROOF", "span_text": "anh bị trừ tiền 2 lần rồi"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 4, "speaker": "victim", "phase": "P2", "text": "Ừ mình có đặt hàng, nhưng sao họ lại gọi điện? Shopee thường chat mà.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_QUESTION", "cognitive_state": "SUSPICIOUS"},
-            {"turn_id": 5, "speaker": "scammer", "phase": "P3", "text": "Dạ đúng anh ơi, trường hợp hoàn tiền số lớn trên 500k bên em gọi điện trực tiếp để xác nhận ạ. Anh cho em xác nhận tên và số thẻ nhé.",
-             "speech_acts": ["SA_DEFLECT", "SA_REQUEST"],
-             "manipulation_intensity": 3,
-             "span_annotations": [{"tag": "DEFLECT_PHRASE", "span_text": "trường hợp hoàn tiền số lớn trên 500k bên em gọi điện trực tiếp"},
-                                   {"tag": "REQUEST_INFO", "span_text": "xác nhận tên và số thẻ"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 6, "speaker": "victim", "phase": "P3", "text": "Số thẻ thì mình không muốn cung cấp... nhưng tên thì được.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_PARTIAL", "cognitive_state": "SUSPICIOUS"},
-            {"turn_id": 7, "speaker": "scammer", "phase": "P4", "text": "Anh ơi, không có số thẻ thì hệ thống không thể hoàn tiền được. Anh yên tâm, đây chỉ để xác minh thôi ạ.",
-             "speech_acts": ["SA_REASSURE", "SA_ESCALATE"],
-             "manipulation_intensity": 4,
-             "span_annotations": [{"tag": "DEFLECT_PHRASE", "span_text": "chỉ để xác minh thôi ạ"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 8, "speaker": "victim", "phase": "P4", "text": "Thôi mình không cung cấp số thẻ đâu, Shopee không bao giờ yêu cầu số thẻ đầy đủ.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_REFUSE", "cognitive_state": "RESISTANT"},
+            {"turn_id": 1, "speaker": "scammer", "phase": "P1",
+             "text": "Dạ anh ơi, em là nhân viên hỗ trợ Shopee. Em thấy đơn hàng của anh bị lỗi thanh toán, anh có được thông báo không ạ?",
+             "span_annotations": [
+                 {"tag": "FAKE_ORG", "span_text": "nhân viên hỗ trợ Shopee"},
+                 {"tag": "FAKE_VALIDATION", "span_text": "đơn hàng của anh bị lỗi thanh toán"},
+             ]},
+            {"turn_id": 2, "speaker": "victim", "phase": "P1",
+             "text": "Lỗi thanh toán? Mình không thấy thông báo gì lúc mua hàng.",
+             "span_annotations": []},
+            {"turn_id": 3, "speaker": "scammer", "phase": "P2",
+             "text": "Đúng vậy anh, hệ thống bị lỗi nên không báo ạ. Bên em kiểm tra thấy anh bị trừ tiền 2 lần rồi. Em muốn giúp anh hoàn tiền.",
+             "span_annotations": [
+                 {"tag": "FAKE_VALIDATION", "span_text": "hệ thống bị lỗi nên không báo"},
+                 {"tag": "SOCIAL_PROOF", "span_text": "anh bị trừ tiền 2 lần rồi"},
+             ]},
+            {"turn_id": 4, "speaker": "victim", "phase": "P2",
+             "text": "Ừ mình có đặt hàng, nhưng sao họ lại gọi điện? Shopee thường chat mà.",
+             "span_annotations": []},
+            {"turn_id": 5, "speaker": "scammer", "phase": "P3",
+             "text": "Dạ đúng anh ơi, trường hợp hoàn tiền số lớn trên 500k bên em gọi điện trực tiếp để xác nhận ạ. Anh cho em xác nhận tên và số thẻ nhé.",
+             "span_annotations": [
+                 {"tag": "DEFLECT_BLAME", "span_text": "trường hợp hoàn tiền số lớn trên 500k bên em gọi điện trực tiếp"},
+                 {"tag": "REQUEST_INFO", "span_text": "xác nhận tên và số thẻ"},
+             ]},
+            {"turn_id": 6, "speaker": "victim", "phase": "P3",
+             "text": "Số thẻ thì mình không muốn cung cấp... nhưng tên thì được.",
+             "span_annotations": []},
+            {"turn_id": 7, "speaker": "scammer", "phase": "P4",
+             "text": "Anh ơi, không có số thẻ thì hệ thống không thể hoàn tiền được. Anh yên tâm, đây chỉ để xác minh thôi ạ.",
+             "span_annotations": [
+                 {"tag": "DEFLECT_BLAME", "span_text": "chỉ để xác minh thôi ạ"},
+             ]},
+            {"turn_id": 8, "speaker": "victim", "phase": "P4",
+             "text": "Thôi mình không cung cấp số thẻ đâu, Shopee không bao giờ yêu cầu số thẻ đầy đủ.",
+             "span_annotations": []},
         ],
         "quality": {
             "writer_id": "W02", "expert_reviewer_id": "EX01",
@@ -212,7 +197,7 @@ def _conv_crypto() -> Dict[str, Any]:
             "total_turns": 6,
             "outcome": "REFUSAL",
             "phases_present": ["P1", "P2", "P3"],
-            "primary_tactics": ["SA_BAIT", "SA_AUTH", "SA_DEFLECT"],
+            "primary_span_tags": ["FAKE_ORG", "SOCIAL_PROOF", "DEFLECT_BLAME"],
             "cialdini_principles": ["social_proof", "scarcity"],
             "cognitive_mechanisms": ["fear_then_relief", "false_authority"],
             "ambiguity_score": 0.38,
@@ -227,36 +212,33 @@ def _conv_crypto() -> Dict[str, Any]:
                        "vulnerability_profile": "high_digital_literacy", "prior_scam_knowledge": "medium"},
         },
         "turns": [
-            {"turn_id": 1, "speaker": "scammer", "phase": "P1", "text": "Anh ơi, em là Minh từ VN Capital. Anh có quan tâm đến cơ hội đầu tư crypto đang cho lợi nhuận 30%/tháng không?",
-             "speech_acts": ["SA_AUTH", "SA_BAIT"],
-             "manipulation_intensity": 2,
-             "span_annotations": [{"tag": "FAKE_ORG", "span_text": "VN Capital"},
-                                   {"tag": "SOCIAL_PROOF", "span_text": "lợi nhuận 30%/tháng"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 2, "speaker": "victim", "phase": "P1", "text": "30% một tháng? Nghe phi thực tế quá. Làm sao có mức đó?",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_QUESTION", "cognitive_state": "SUSPICIOUS"},
-            {"turn_id": 3, "speaker": "scammer", "phase": "P2", "text": "Đây là hệ thống trading AI thần kỳ mới nhất, bot chạy 24/7. Tháng này nhiều khách đã rút lời mà tôi vẫn đang chờ anh đấy.",
-             "speech_acts": ["SA_VALIDATE", "SA_URGENCY", "SA_BAIT"],
-             "manipulation_intensity": 3,
-             "span_annotations": [{"tag": "FAKE_VALIDATION", "span_text": "hệ thống trading AI thần kỳ mới nhất"},
-                                   {"tag": "URGENCY_PHRASE", "span_text": "nhiều khách đã rút lời mà tôi vẫn đang chờ anh"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 4, "speaker": "victim", "phase": "P2", "text": "Không có đầu tư nào đảm bảo lợi nhuận như vậy. Đây là scam rõ ràng.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_EXPOSE", "cognitive_state": "RESISTANT"},
-            {"turn_id": 5, "speaker": "scammer", "phase": "P3", "text": "Anh lầm rồi, đây là công nghệ mới, tôi có thể cho anh xem report của 100 nhà đầu tư...",
-             "speech_acts": ["SA_DEFLECT", "SA_VALIDATE"],
-             "manipulation_intensity": 3,
-             "span_annotations": [{"tag": "DEFLECT_PHRASE", "span_text": "Anh lầm rồi"},
-                                   {"tag": "SOCIAL_PROOF", "span_text": "report của 100 nhà đầu tư"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 6, "speaker": "victim", "phase": "P3", "text": "Không cần. Tôi không quan tâm. Đừng gọi lại.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_REFUSE", "cognitive_state": "REFUSING"},
+            {"turn_id": 1, "speaker": "scammer", "phase": "P1",
+             "text": "Anh ơi, em là Minh từ VN Capital. Anh có quan tâm đến cơ hội đầu tư crypto đang cho lợi nhuận 30%/tháng không?",
+             "span_annotations": [
+                 {"tag": "FAKE_ORG", "span_text": "VN Capital"},
+                 {"tag": "SOCIAL_PROOF", "span_text": "lợi nhuận 30%/tháng"},
+             ]},
+            {"turn_id": 2, "speaker": "victim", "phase": "P1",
+             "text": "30% một tháng? Nghe phi thực tế quá. Làm sao có mức đó?",
+             "span_annotations": []},
+            {"turn_id": 3, "speaker": "scammer", "phase": "P2",
+             "text": "Đây là hệ thống trading AI thần kỳ mới nhất, bot chạy 24/7. Tháng này nhiều khách đã rút lời mà tôi vẫn đang chờ anh đấy.",
+             "span_annotations": [
+                 {"tag": "FAKE_VALIDATION", "span_text": "hệ thống trading AI thần kỳ mới nhất"},
+                 {"tag": "URGENT_CLAIM", "span_text": "nhiều khách đã rút lời mà tôi vẫn đang chờ anh"},
+             ]},
+            {"turn_id": 4, "speaker": "victim", "phase": "P2",
+             "text": "Không có đầu tư nào đảm bảo lợi nhuận như vậy. Đây là scam rõ ràng.",
+             "span_annotations": []},
+            {"turn_id": 5, "speaker": "scammer", "phase": "P3",
+             "text": "Anh lầm rồi, đây là công nghệ mới, tôi có thể cho anh xem report của 100 nhà đầu tư...",
+             "span_annotations": [
+                 {"tag": "DEFLECT_BLAME", "span_text": "Anh lầm rồi"},
+                 {"tag": "SOCIAL_PROOF", "span_text": "report của 100 nhà đầu tư"},
+             ]},
+            {"turn_id": 6, "speaker": "victim", "phase": "P3",
+             "text": "Không cần. Tôi không quan tâm. Đừng gọi lại.",
+             "span_annotations": []},
         ],
         "quality": {
             "writer_id": "W03", "expert_reviewer_id": "EX02",
@@ -284,7 +266,7 @@ def _conv_interrupted() -> Dict[str, Any]:
             "total_turns": 4,
             "outcome": "INTERRUPTED",
             "phases_present": ["P1", "P3"],
-            "primary_tactics": ["SA_AUTH", "SA_URGENCY"],
+            "primary_span_tags": ["FAKE_ID", "THREAT_PHRASE", "REQUEST_INFO"],
             "cialdini_principles": ["authority"],
             "cognitive_mechanisms": ["fear_injection"],
             "ambiguity_score": 0.72,
@@ -299,26 +281,25 @@ def _conv_interrupted() -> Dict[str, Any]:
                        "vulnerability_profile": "low_digital_literacy", "prior_scam_knowledge": "none"},
         },
         "turns": [
-            {"turn_id": 1, "speaker": "scammer", "phase": "P1", "text": "Đây là Cảnh sát kinh tế Hà Nội. Bà có liên quan đến vụ án rửa tiền 2 tỷ đồng đang điều tra.",
-             "speech_acts": ["SA_AUTH", "SA_THREAT"],
-             "manipulation_intensity": 5,
-             "span_annotations": [{"tag": "FAKE_ID", "span_text": "Cảnh sát kinh tế Hà Nội"},
-                                   {"tag": "FAKE_VALIDATION", "span_text": "vụ án rửa tiền 2 tỷ đồng"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 2, "speaker": "victim", "phase": "P1", "text": "Sao lại... trời ơi...",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_HESITATE", "cognitive_state": "FEARFUL"},
-            {"turn_id": 3, "speaker": "scammer", "phase": "P3", "text": "Bà cần hợp tác ngay bây giờ, chuyển toàn bộ tài sản vào tài khoản an ninh để chúng tôi bảo vệ.",
-             "speech_acts": ["SA_URGENCY", "SA_REQUEST"],
-             "manipulation_intensity": 5,
-             "span_annotations": [{"tag": "URGENCY_PHRASE", "span_text": "ngay bây giờ"},
-                                   {"tag": "REQUEST_INFO", "span_text": "chuyển toàn bộ tài sản"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 4, "speaker": "victim", "phase": "P3", "text": "[Cúp máy]",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": None, "cognitive_state": "FEARFUL"},
+            {"turn_id": 1, "speaker": "scammer", "phase": "P1",
+             "text": "Đây là Cảnh sát kinh tế Hà Nội. Bà có liên quan đến vụ án rửa tiền 2 tỷ đồng đang điều tra.",
+             "span_annotations": [
+                 {"tag": "FAKE_ID", "span_text": "Cảnh sát kinh tế Hà Nội"},
+                 {"tag": "FAKE_VALIDATION", "span_text": "vụ án rửa tiền 2 tỷ đồng"},
+             ]},
+            {"turn_id": 2, "speaker": "victim", "phase": "P1",
+             "text": "Sao lại... trời ơi...",
+             "span_annotations": []},
+            {"turn_id": 3, "speaker": "scammer", "phase": "P3",
+             "text": "Bà cần hợp tác ngay bây giờ, chuyển toàn bộ tài sản vào tài khoản an ninh để chúng tôi bảo vệ.",
+             "span_annotations": [
+                 {"tag": "URGENT_CLAIM", "span_text": "ngay bây giờ"},
+                 {"tag": "REQUEST_INFO", "span_text": "chuyển toàn bộ tài sản"},
+                 {"tag": "THREAT_PHRASE", "span_text": "tài khoản an ninh"},
+             ]},
+            {"turn_id": 4, "speaker": "victim", "phase": "P3",
+             "text": "[Cúp máy]",
+             "span_annotations": []},
         ],
         "quality": {
             "writer_id": "W01", "expert_reviewer_id": "EX01",
@@ -346,7 +327,7 @@ def _conv_legit() -> Dict[str, Any]:
             "total_turns": 4,
             "outcome": "REFUSAL",
             "phases_present": ["P1", "P2"],
-            "primary_tactics": ["SA_AUTH"],
+            "primary_span_tags": ["FAKE_ORG"],
             "cialdini_principles": [],
             "cognitive_mechanisms": [],
             "ambiguity_score": 0.28,
@@ -361,24 +342,20 @@ def _conv_legit() -> Dict[str, Any]:
                        "vulnerability_profile": "high_digital_literacy", "prior_scam_knowledge": "high"},
         },
         "turns": [
-            {"turn_id": 1, "speaker": "scammer", "phase": "P1", "text": "Xin chào anh, đây là Techcombank. Chúng tôi gọi để thông báo thẻ tín dụng của anh sắp hết hạn vào tháng 6.",
-             "speech_acts": ["SA_AUTH"],
-             "manipulation_intensity": 1,
-             "span_annotations": [{"tag": "FAKE_ORG", "span_text": "Techcombank"}],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 2, "speaker": "victim", "phase": "P1", "text": "Vâng, tôi đã biết rồi, ngân hàng đã nhắn tin cho tôi.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_COMPLY", "cognitive_state": "NEUTRAL"},
-            {"turn_id": 3, "speaker": "scammer", "phase": "P2", "text": "Anh có muốn làm lại thẻ qua hotline hoặc đến chi nhánh không ạ?",
-             "speech_acts": ["SA_REQUEST"],
-             "manipulation_intensity": 1,
-             "span_annotations": [],
-             "response_type": None, "cognitive_state": None},
-            {"turn_id": 4, "speaker": "victim", "phase": "P2", "text": "Để tôi tự làm trên app, không cần qua điện thoại.",
-             "speech_acts": [], "manipulation_intensity": None,
-             "span_annotations": [],
-             "response_type": "VR_REFUSE", "cognitive_state": "NEUTRAL"},
+            {"turn_id": 1, "speaker": "scammer", "phase": "P1",
+             "text": "Xin chào anh, đây là Techcombank. Chúng tôi gọi để thông báo thẻ tín dụng của anh sắp hết hạn vào tháng 6.",
+             "span_annotations": [
+                 {"tag": "FAKE_ORG", "span_text": "Techcombank"},
+             ]},
+            {"turn_id": 2, "speaker": "victim", "phase": "P1",
+             "text": "Vâng, tôi đã biết rồi, ngân hàng đã nhắn tin cho tôi.",
+             "span_annotations": []},
+            {"turn_id": 3, "speaker": "scammer", "phase": "P2",
+             "text": "Anh có muốn làm lại thẻ qua hotline hoặc đến chi nhánh không ạ?",
+             "span_annotations": []},
+            {"turn_id": 4, "speaker": "victim", "phase": "P2",
+             "text": "Để tôi tự làm trên app, không cần qua điện thoại.",
+             "span_annotations": []},
         ],
         "quality": {
             "writer_id": "W02", "expert_reviewer_id": "EX02",
@@ -403,12 +380,21 @@ def _synthetic_variants() -> List[Dict[str, Any]]:
         domain = random.choice(domains)
         ambig = random.choice(ambig_levels)
         diff = random.choice(diff_tiers)
+        # Derive primary_span_tags from spans
+        tag_counter: Dict[str, int] = {}
+        for t in turns:
+            for sp in (t.get("span_annotations") or []):
+                tg = sp.get("tag", "")
+                if tg:
+                    tag_counter[tg] = tag_counter.get(tg, 0) + 1
+        primary_tags = [k for k, _ in sorted(tag_counter.items(), key=lambda x: -x[1])][:3]
+
         samples.append({
             "conversation_id": f"DEMO_SYN_{i+6:03d}",
             "meta": {"dataset_version": "1.0.0", "schema_version": "2.0.0", "language": "vi"},
             "scenario": {
                 "id": f"SYN_{domain[:4]}_{i:02d}",
-                "name": f"Synthetic {domain.replace('_',' ')} #{i+1}",
+                "name": f"Synthetic {domain.replace('_', ' ')} #{i+1}",
                 "domain_l1": domain,
                 "domain_l2": "",
                 "fraud_goal": "general",
@@ -418,8 +404,10 @@ def _synthetic_variants() -> List[Dict[str, Any]]:
                 "length_class": "short" if n_turns < 8 else "medium",
                 "total_turns": n_turns,
                 "outcome": outcome,
-                "phases_present": list(set(t.get("phase") for t in turns if t.get("phase"))),
-                "primary_tactics": [],
+                "phases_present": list(dict.fromkeys(
+                    t.get("phase") for t in turns if t.get("phase")
+                )),
+                "primary_span_tags": primary_tags,
                 "cialdini_principles": [],
                 "cognitive_mechanisms": [],
                 "ambiguity_score": {"low": 0.2, "medium": 0.5, "high": 0.75}[ambig],
@@ -430,7 +418,7 @@ def _synthetic_variants() -> List[Dict[str, Any]]:
             "personas": None,
             "turns": turns,
             "quality": {
-                "writer_id": f"W0{(i%3)+1}",
+                "writer_id": f"W0{(i % 3) + 1}",
                 "expert_reviewer_id": None,
                 "annotation_method": "adversarial_roleplay",
                 "iaa_score": round(0.75 + random.random() * 0.2, 2),
@@ -441,45 +429,42 @@ def _synthetic_variants() -> List[Dict[str, Any]]:
     return samples
 
 
+# Span tag pool for synthetic generation
+_SPAN_POOL = [
+    ("FAKE_ORG", "tổ chức giả mạo"),
+    ("FAKE_ID", "danh tính giả mạo"),
+    ("FAKE_VALIDATION", "xác nhận thông tin giả"),
+    ("REQUEST_INFO", "yêu cầu thông tin nhạy cảm"),
+    ("URGENT_CLAIM", "tuyên bố cấp bách"),
+    ("THREAT_PHRASE", "câu đe dọa"),
+    ("SOCIAL_PROOF", "bằng chứng xã hội giả"),
+    ("DEFLECT_BLAME", "chuyển trách nhiệm"),
+]
+_PHASES = ["P1"] * 2 + ["P2"] * 2 + ["P3"] * 2 + ["P4"] * 2 + ["P5"] * 2 + ["P6"] * 2
+
+
 def _gen_synthetic_turns(n: int) -> List[Dict[str, Any]]:
-    ssat_pool = ["SA_AUTH", "SA_THREAT", "SA_URGENCY", "SA_REASSURE", "SA_REQUEST",
-                 "SA_DEFLECT", "SA_VALIDATE", "SA_ESCALATE", "SA_BAIT", "SA_CLOSE"]
-    vcs_pool = ["NEUTRAL", "CURIOUS", "CONCERNED", "FEARFUL", "SUSPICIOUS", "COMPLIANT", "RESISTANT"]
-    vrt_pool = ["VR_COMPLY", "VR_PARTIAL", "VR_HESITATE", "VR_QUESTION", "VR_RESIST", "VR_REFUSE"]
-    phases = ["P1"] * 2 + ["P2"] * 2 + ["P3"] * 2 + ["P4"] * 2 + ["P5"] * 2 + ["P6"] * 2
     turns = []
-    vcs_state = "NEUTRAL"
-    vcs_seq = ["NEUTRAL", "CURIOUS", "CONCERNED", "FEARFUL", "COMPLIANT"]
-    vcs_i = 0
     for i in range(n):
         speaker = "scammer" if i % 2 == 0 else "victim"
-        ph = phases[min(i // 2, len(phases) - 1)]
+        ph = _PHASES[min(i // 2, len(_PHASES) - 1)]
         if speaker == "scammer":
-            n_acts = random.randint(1, 3)
-            acts = random.sample(ssat_pool, n_acts)
+            n_spans = random.randint(0, 3)
+            chosen = random.sample(_SPAN_POOL, min(n_spans, len(_SPAN_POOL)))
+            spans = [{"tag": tag, "span_text": text} for tag, text in chosen]
             turns.append({
                 "turn_id": i + 1,
                 "speaker": "scammer",
                 "phase": ph,
                 "text": f"Scammer turn {i+1}: synthetic text mô phỏng hội thoại lừa đảo.",
-                "speech_acts": acts,
-                "manipulation_intensity": random.randint(1, 5),
-                "span_annotations": [],
-                "response_type": None,
-                "cognitive_state": None,
+                "span_annotations": spans,
             })
         else:
-            vcs_i = min(vcs_i + random.randint(0, 1), len(vcs_seq) - 1)
-            vcs_state = vcs_seq[vcs_i]
             turns.append({
                 "turn_id": i + 1,
                 "speaker": "victim",
                 "phase": ph,
                 "text": f"Victim turn {i+1}: phản hồi tự nhiên của nạn nhân.",
-                "speech_acts": [],
-                "manipulation_intensity": None,
                 "span_annotations": [],
-                "response_type": random.choice(vrt_pool),
-                "cognitive_state": vcs_state,
             })
     return turns

@@ -7,7 +7,7 @@ import pandas as pd
 from collections import Counter
 
 from src.constants import BENCHMARK_TASKS
-from src.schema import VALID_SSAT, VALID_VCS_V2
+from src.schema import VALID_SPAN_LABELS, SPAN_COLORS, ALL_SPAN_TAGS
 
 
 def render(session):
@@ -19,7 +19,7 @@ def render(session):
 
     st.markdown("Thống kê data coverage cho 7 benchmark tasks (T1–T7). Tool không train/eval model — chỉ hiển thị phân phối nhãn và sẵn sàng data.")
 
-    task_tabs = st.tabs([f"T{i}" for i in range(1, 8)])
+    task_tabs = st.tabs(["T1", "T2", "T3", "T4b", "T5", "T6-VSVS", "T7"])
 
     # T1: Scam Detection
     with task_tabs[0]:
@@ -79,25 +79,35 @@ def render(session):
             total_turns = sum(len(c.get("turns", [])) for c in convs)
             st.metric("Phase-annotated turns", f"{annotated}/{total_turns} ({annotated/max(total_turns,1):.0%})")
 
-    # T4: Tactic Classification
+    # T4b: Span Extraction (NER)
     with task_tabs[3]:
-        _task_header("T4", "Tactic Classification (SSAT)", "Multi-label classification của speech acts cho từng scammer turn.")
-        ssat_counts: Counter = Counter()
+        _task_header("T4b", "Manipulation Span Extraction (NER)", "Trích xuất span tag + span text từ scammer turn (token-level NER).")
+        span_counts: Counter = Counter()
         for conv in convs:
             for t in conv.get("turns", []):
                 if t.get("speaker") == "scammer":
-                    for sa in (t.get("speech_acts") or []):
-                        ssat_counts[sa] += 1
-        df_sa = pd.DataFrame(list(ssat_counts.items()), columns=["Tactic", "Count"]).sort_values("Count", ascending=False)
-        fig = px.bar(df_sa, x="Tactic", y="Count", title="T4 SSAT Label Frequency",
-                     template="plotly_white", color="Tactic",
-                     color_discrete_map=__import__("src.schema", fromlist=["SSAT_COLORS"]).SSAT_COLORS)
+                    for sp in (t.get("span_annotations") or []):
+                        tag = sp.get("tag", "")
+                        if tag:
+                            span_counts[tag] += 1
+        df_sp = pd.DataFrame(list(span_counts.items()), columns=["Span Tag", "Count"]).sort_values("Count", ascending=False)
+        cols_sp = [SPAN_COLORS.get(t, "#94a3b8") for t in df_sp["Span Tag"]]
+        import plotly.graph_objects as go
+        fig = go.Figure(go.Bar(
+            x=df_sp["Span Tag"].tolist(), y=df_sp["Count"].tolist(),
+            marker_color=cols_sp,
+            text=df_sp["Count"].tolist(), textposition="outside",
+        ))
+        fig.update_layout(title="T4b Span Tag Frequency (NER labels)", template="plotly_white")
         st.plotly_chart(fig, use_container_width=True)
         scammer_turns = sum(1 for c in convs for t in c.get("turns", []) if t.get("speaker") == "scammer")
-        st.metric("Total scammer turns (T4 samples)", scammer_turns)
         annotated_turns = sum(1 for c in convs for t in c.get("turns", [])
-                              if t.get("speaker") == "scammer" and t.get("speech_acts"))
-        st.metric("SSAT-annotated turns", f"{annotated_turns} ({annotated_turns/max(scammer_turns,1):.0%})")
+                              if t.get("speaker") == "scammer" and t.get("span_annotations"))
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Total scammer turns", scammer_turns)
+        c2.metric("Span-annotated turns", annotated_turns)
+        c3.metric("Coverage", f"{annotated_turns/max(scammer_turns,1):.0%}")
+        st.caption(f"Unique span tags present: {len(span_counts)}/{len(ALL_SPAN_TAGS)}")
 
     # T5: Outcome Prediction
     with task_tabs[4]:
@@ -115,27 +125,19 @@ def render(session):
         col3.metric("Coverage", f"{available/max(len(convs),1):.0%}")
         st.info("T5 dùng prefix P1-P3 để dự đoán outcome. Coverage thể hiện % conversations có đủ dữ liệu prefix.")
 
-    # T6: Victim State Tracking
+    # T6: VSVS Span Transition
     with task_tabs[5]:
-        _task_header("T6", "Victim State Tracking (VCS)", "Dự đoán cognitive state sequence cho victim.")
-        vcs_counts: Counter = Counter()
-        for conv in convs:
-            for t in conv.get("turns", []):
-                if t.get("speaker") == "victim" and t.get("cognitive_state"):
-                    vcs_counts[t["cognitive_state"]] += 1
-        victim_turns = sum(1 for c in convs for t in c.get("turns", []) if t.get("speaker") == "victim")
-        annotated_vcs = sum(vcs_counts.values())
-        df_vcs = pd.DataFrame(list(vcs_counts.items()), columns=["State", "Count"]).sort_values("Count", ascending=False)
-        col1, col2 = st.columns(2)
-        with col1:
-            fig = px.bar(df_vcs, x="State", y="Count", title="T6 VCS Distribution",
-                         template="plotly_white",
-                         color_discrete_sequence=["#8b5cf6"])
-            st.plotly_chart(fig, use_container_width=True)
-        with col2:
-            st.dataframe(df_vcs, use_container_width=True)
-            st.metric("Victim turns (T6 samples)", victim_turns)
-            st.metric("VCS-annotated turns", f"{annotated_vcs} ({annotated_vcs/max(victim_turns,1):.0%})")
+        _task_header("T6-VSVS", "Span Transition Validity (VSVS)", "Kiểm tra span tags xuất hiện đúng thứ tự phase.")
+        from src.metrics.victim_state_validity import dataset_vsvs_report
+        vsvs = dataset_vsvs_report(convs)
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Mean Validity Ratio", f"{vsvs['mean_validity_ratio']:.3f}")
+        c2.metric("Valid Conversations", vsvs['n_valid'])
+        c3.metric("Invalid Conversations", vsvs['n_invalid'])
+        if vsvs.get("all_invalid_transitions"):
+            with st.expander(f"⚠️ {len(vsvs['all_invalid_transitions'])} invalid transitions"):
+                df_inv = pd.DataFrame(vsvs["all_invalid_transitions"])
+                st.dataframe(df_inv, use_container_width=True)
 
     # T7: Ambiguity-Stratified Evaluation
     with task_tabs[6]:

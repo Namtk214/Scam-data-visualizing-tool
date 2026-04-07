@@ -4,8 +4,8 @@ page_browser.py — Data Browser page: filter, view conversation cards.
 from typing import List, Dict, Any
 import streamlit as st
 
-from src.schema import SPAN_COLORS, SSAT_COLORS, VCS_COLORS, VALID_DOMAIN_L1
-from src.viz.charts_detail import plot_manipulation_timeline, plot_ds_radar_single
+from src.schema import SPAN_COLORS, VALID_DOMAIN_L1
+from src.viz.charts_detail import plot_ds_radar_single
 
 
 def render(session):
@@ -69,7 +69,8 @@ def _render_conv_card(conv: Dict[str, Any]):
             st.markdown(f"**Fraud goal:** {scenario.get('fraud_goal', '—')}")
             phases = cm.get("phases_present", [])
             st.markdown(f"**Phases:** {' → '.join(phases) if phases else '—'}")
-            st.markdown(f"**Primary tactics:** {', '.join(cm.get('primary_tactics', []) or [])}")
+            primary_tags = cm.get("primary_span_tags") or cm.get("primary_tactics") or []
+            st.markdown(f"**Primary span tags:** {', '.join(primary_tags) or '—'}")
         with mc2:
             st.markdown(f"**Ambiguity score:** {cm.get('ambiguity_score')}")
             st.markdown(f"**Difficulty score:** {cm.get('difficulty_score')}")
@@ -102,14 +103,12 @@ def _render_conv_card(conv: Dict[str, Any]):
             qc2.metric("Authenticity", quality.get("expert_authenticity_score", "—"))
             qc3.metric("Method", quality.get("annotation_method", "—"))
 
-    # ── Manipulation timeline ─────────────────────────────────────
-    has_intensity = any(
-        t.get("manipulation_intensity") is not None
-        for t in conv.get("turns", [])
-        if t.get("speaker") == "scammer"
-    )
-    if has_intensity:
-        st.plotly_chart(plot_manipulation_timeline(conv), use_container_width=True)
+    # Span density timeline (replaces manipulation_intensity timeline)
+    from src.viz.charts_detail import plot_ds_radar_single
+    from src.metrics.difficulty_score import compute_ds
+    ds_result = compute_ds(conv)
+    if ds_result.get("sub_scores"):
+        st.plotly_chart(plot_ds_radar_single(ds_result["sub_scores"]), use_container_width=True)
 
     # ── Turns ─────────────────────────────────────────────────────
     st.markdown("---")
@@ -128,26 +127,16 @@ def _render_turn(turn: Dict[str, Any]):
     spans = turn.get("span_annotations") or []
     highlighted = _highlight_spans(text, spans)
 
-    # Speech acts / response type / cognitive state badges
+    # Phase badge + Span tag badges
     badges_html = ""
     ph = turn.get("phase")
     if ph:
         badges_html += f'<span style="background:#1e293b;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px;">{ph}</span>'
-    if is_scammer:
-        for sa in (turn.get("speech_acts") or []):
-            color = SSAT_COLORS.get(sa, "#6366f1")
-            badges_html += f'<span style="background:{color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px;">{sa}</span>'
-        mi = turn.get("manipulation_intensity")
-        if mi:
-            badges_html += f'<span style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px;">Intensity:{mi}</span>'
-    else:
-        vrt = turn.get("response_type")
-        if vrt:
-            badges_html += f'<span style="background:#3b82f6;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px;">{vrt}</span>'
-        vcs = turn.get("cognitive_state")
-        if vcs:
-            color = VCS_COLORS.get(vcs, "#8b5cf6")
-            badges_html += f'<span style="background:{color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px;">{vcs}</span>'
+    for sp in (turn.get("span_annotations") or []):
+        tag = sp.get("tag", "")
+        if tag:
+            color = SPAN_COLORS.get(tag, "#6366f1")
+            badges_html += f'<span style="background:{color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px;">{tag}</span>'
 
     st.markdown(f"""
     <div style="border-left:4px solid {border};background:{bg};padding:12px 16px;margin-bottom:10px;border-radius:6px;">

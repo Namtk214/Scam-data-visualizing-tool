@@ -1,6 +1,6 @@
 """
 stats.py — Tất cả hàm thống kê dạng pandas DataFrame.
-v2 compatible: supports both legacy (v1 turn_labels) and v2 (speech_acts, cognitive_state) schema.
+Span-only version: không còn speech_acts, cognitive_state, response_type, manipulation_intensity.
 """
 from typing import List, Dict, Any
 from collections import Counter, defaultdict
@@ -64,7 +64,7 @@ def build_conversation_df(conversations: List[Dict[str, Any]]) -> pd.DataFrame:
 
 
 def flatten_to_turn_df(conversations: List[Dict[str, Any]]) -> pd.DataFrame:
-    """Tạo DataFrame ở turn-level. Hỗ trợ v1 + v2 schema."""
+    """Tạo DataFrame ở turn-level. Span-only: chỉ giữ turn_id, speaker, phase, text, n_spans."""
     rows = []
     for conv in conversations:
         conv_id = conv.get("conversation_id", "")
@@ -72,19 +72,10 @@ def flatten_to_turn_df(conversations: List[Dict[str, Any]]) -> pd.DataFrame:
         outcome = cm.get("outcome") or conv.get("conversation_labels", {}).get("outcome", "")
         turns = conv.get("turns", [])
         for t in turns:
-            tl = t.get("turn_labels", {}) or {}
-            # speech_acts: v2 first, then v1 turn_labels.ssat
-            speech_acts = t.get("speech_acts") or tl.get("ssat") or []
-            if isinstance(speech_acts, str):
-                speech_acts = [speech_acts] if speech_acts else []
-            # phase: v2 first
-            phase = t.get("phase") or tl.get("phase") or ""
-            # vcs: v2 cognitive_state, v1 turn_labels.vcs
-            vcs = t.get("cognitive_state") or tl.get("vcs") or ""
-            # vrt: v2 response_type, v1 turn_labels.vrt
-            vrt = t.get("response_type") or tl.get("vrt") or ""
-            # spans: v2 span_annotations, v1 spans
-            n_spans = len(t.get("span_annotations") or t.get("spans", []))
+            phase = t.get("phase") or (t.get("turn_labels", {}) or {}).get("phase") or ""
+            spans = t.get("span_annotations") or t.get("spans", [])
+            n_spans = len(spans)
+            span_tags = [sp.get("tag", "") for sp in spans if sp.get("tag")]
 
             rows.append({
                 "conversation_id": conv_id,
@@ -94,16 +85,9 @@ def flatten_to_turn_df(conversations: List[Dict[str, Any]]) -> pd.DataFrame:
                 "text": t.get("text", ""),
                 "n_tokens": len(t.get("text", "").split()),
                 "phase": phase,
-                "speech_acts": speech_acts,
-                "ssat": speech_acts,  # backward compat alias
-                "ssat_str": "|".join(speech_acts),
-                "n_ssat": len(speech_acts),
-                "vrt": vrt,
-                "vcs": vcs,
-                "cognitive_state": vcs,  # alias
-                "response_type": vrt,    # alias
-                "manipulation_intensity": t.get("manipulation_intensity"),
                 "n_spans": n_spans,
+                "span_tags": span_tags,
+                "span_tags_str": "|".join(span_tags),
             })
     return pd.DataFrame(rows)
 
@@ -218,23 +202,22 @@ def compute_vcs_transitions(df_turn: pd.DataFrame) -> pd.DataFrame:
     return matrix
 
 
-def compute_ssat_cooccurrence(df_turn: pd.DataFrame) -> pd.DataFrame:
+def compute_span_tag_cooccurrence(df_turn: pd.DataFrame) -> pd.DataFrame:
     """
-    Tính co-occurrence matrix của SSAT labels.
+    Tính co-occurrence matrix của Span Tags.
     """
     scammer_turns = df_turn[df_turn["speaker"] == "scammer"]
-    all_ssat = []
-    col = "speech_acts" if "speech_acts" in df_turn.columns else "ssat"
-    for ssat_list in scammer_turns[col]:
-        if isinstance(ssat_list, list):
-            all_ssat.append(ssat_list)
+    all_tag_lists = []
+    for tag_list in scammer_turns.get("span_tags", pd.Series(dtype=object)):
+        if isinstance(tag_list, list):
+            all_tag_lists.append(tag_list)
 
-    all_labels = sorted({s for row in all_ssat for s in row})
+    all_labels = sorted({s for row in all_tag_lists for s in row})
     if not all_labels:
         return pd.DataFrame()
 
     matrix = pd.DataFrame(0, index=all_labels, columns=all_labels)
-    for row in all_ssat:
+    for row in all_tag_lists:
         for a in row:
             for b in row:
                 if a in matrix.index and b in matrix.columns:
@@ -243,38 +226,36 @@ def compute_ssat_cooccurrence(df_turn: pd.DataFrame) -> pd.DataFrame:
     return matrix
 
 
-def compute_tactic_phase_matrix(df_turn: pd.DataFrame) -> pd.DataFrame:
+def compute_span_tag_phase_matrix(df_turn: pd.DataFrame) -> pd.DataFrame:
     """
-    Tính Tactic x Phase: rows = phase, cols = SSAT labels.
+    Tính Span Tag x Phase: rows = phase, cols = span tags.
+    Thay thế compute_tactic_phase_matrix.
     """
     scammer = df_turn[df_turn["speaker"] == "scammer"].copy()
-    col = "speech_acts" if "speech_acts" in df_turn.columns else "ssat"
     rows = []
     for _, row in scammer.iterrows():
         phase = row.get("phase", "")
-        for s in (row.get(col) or []):
-            rows.append({"phase": phase, "ssat": s})
+        for tag in (row.get("span_tags") or []):
+            rows.append({"phase": phase, "span_tag": tag})
 
     if not rows:
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)
-    matrix = df.groupby(["phase", "ssat"]).size().reset_index(name="count")
-    pivot = matrix.pivot(index="phase", columns="ssat", values="count").fillna(0)
+    matrix = df.groupby(["phase", "span_tag"]).size().reset_index(name="count")
+    pivot = matrix.pivot(index="phase", columns="span_tag", values="count").fillna(0)
     return pivot
 
 
 def compute_prefix_signals(
     conversations: List[Dict[str, Any]],
-    signal_ssat: set = None,
     signal_spans: set = None,
 ) -> pd.DataFrame:
     """
     Tính tín hiệu scam xuất hiện tại mỗi prefix (25%, 50%, 75%, 100%).
+    Span-only: chỉ dùng span tags, không cần speech_acts nữa.
     """
-    from src.schema import SCAM_SIGNAL_SSAT, SCAM_SIGNAL_SPANS
-    if signal_ssat is None:
-        signal_ssat = SCAM_SIGNAL_SSAT
+    from src.schema import SCAM_SIGNAL_SPANS
     if signal_spans is None:
         signal_spans = SCAM_SIGNAL_SPANS
 
@@ -293,11 +274,6 @@ def compute_prefix_signals(
             prefix_turns = turns[:cutoff]
             n_signals = 0
             for t in prefix_turns:
-                # v2 speech_acts, v1 turn_labels.ssat
-                tl = t.get("turn_labels", {}) or {}
-                ssat = set(t.get("speech_acts") or tl.get("ssat") or [])
-                n_signals += len(ssat & signal_ssat)
-                # v2 span_annotations, v1 spans
                 for sp in (t.get("span_annotations") or t.get("spans", [])):
                     tag = sp.get("tag") or sp.get("label", "")
                     if tag in signal_spans:
